@@ -137,6 +137,37 @@ print ((a (1+1)) -(b c)) d
 
 하스켈 같은 경우는 `.` 와 `$` 신택스가 있어서 저런 경우는 괄호가 많지 않아도 잘 표현할 수 있었는데 여기서는 베이스 문법에서 그런건 제공하지 않을 거니까 어떻게 해야할지 모르겟다 ....
 
+## 메서드 정의 패턴
+
+기차에서 좋은 생각이 났다!! 메서드를 정의하는 패턴을 정의하는 것이다. 예를 들어 `fn` 패턴이라 하자.
+
+```
+type Method(name, params, inner) {
+    .ctor = {
+        $name $params = { $inner }
+    }
+    `( given `) = name given
+}
+
+fn $name `( `) `{ $inner `} = { 
+    Method($name, [], $inner)
+    // 이거 스코프가 밖까지 나가야함. ..,,, 패턴 내에서 패턴 생성 어뜨케 할까 ?
+    // 라고 처음엔 생각했지만 약간 생각이 바뀜. 이거 좀 쩔어
+    // Method의 생성자에서 name params 의 패턴이 생성되고 이게 멤버 변수임
+    // 그리고 Method를 호출하는 두번째 패턴에서 그걸 사용하는거지
+}
+
+fn $name `( $first(`:$ftyp:type)? (`, ($exprs(`:$typ:type)?)* `) `{ $inner `} = {
+    Method($name, [$first`:$ftyp, *[($exprs`:$typ)*]], $inner)
+}
+
+fn say(msg:string, from:string) {
+    print(from, ": ", msg)
+}
+
+say("Hey!", "John") // 요로코롬 호출 가능함 \(>ㅡ<)/
+```
+
 ## 파라미터 -> expression/value 매칭?
 
 파라미터를 ast로 받아서 메타 프로그래밍이 가능해야 한다.
@@ -161,3 +192,6 @@ ho 패턴에 어떤 값을 넣던 어떤 게 먼저 실행될까 ,, ? 아마 이
 
 그냥 이런 코드를 쓰면 안된다 하자
 
+## 패턴내에서 패턴의 스코프
+
+요거는 ~~~~ 다음 시간에 생각해보도록 하자~~~^^
