@@ -28,7 +28,7 @@
 ### Hello World
 
 ```
-main = print "Hello World"
+main = print("Hello World")
 ```
 
 ### Sum1To10
@@ -37,10 +37,10 @@ main = print "Hello World"
 main = {
     sum = 0
     i = 1
-    while i <= 10 {
+    while(i <= 10) {
         sum += i
     }
-    print sum
+    print(sum)
 }
 ```
 
@@ -48,17 +48,17 @@ main = {
 
 ```
 // recursive
-fib 0 = 1
-fib 1 = 1
-fib $n:int = fib ($n-1) + fib ($n-2)
+fib(0) = 1
+fib(1) = 1
+fib($n:int) = fib($n-1) + fib($n-2)
 ```
 
 ```
 // iterative
-fib $n:int = {
+fib($n:int) = {
     a = 0
     b = 1
-    loop $n {
+    loop($n) {
         a, b = b, a + b
     }
     b
@@ -68,26 +68,26 @@ fib $n:int = {
 ### Define `for`
 
 ```
-for `( $init ; $cond ; $after; `) `{ $inner `} = {
+for ( $init; $cond; $after; ) { $inner } = {
         $init
-        while $cond {
+        while($cond) {
             $inner
             $after
         }
 }
 
 for (i = 0; i<=10; i++) {
-    print i
+    print(i)
 }
 ```
 
 ### Define Array, Range Syntax
 
 ```
-`[ `] = array
-`[ $first (`, $elem)* `] = array $first $elem*
-// [1, 2, 3] = array 1 2 3
-// [1, 1+1, 1] = array 1 (1+1) 1
+arr [ ] = array()
+arr [ $first $(`, $elem)*@elems ] = array($first $elems*)
+// arr[1, 2, 3] = array(1, 2, 3)
+// arr[1, 1+1, 1] = array(1, 1+1, 1)
 
 $from `... $to = range $from $to
 ```
@@ -99,7 +99,20 @@ type Person(name:string, age:int)
 
 a = Person("0xad", 3)
 a.name = a.name + ";"
-print a.name // "0xad;"
+print(a.name) // "0xad;"
+```
+
+멤버 메서드 ?
+
+```
+type Person(name:string, age:int) {
+    .old() = {
+        age = age + 1
+    }
+}
+
+a = Person("0xad", 3)
+a.old()
 ```
 
 ## 구현
@@ -115,8 +128,8 @@ print a.name // "0xad;"
 않으면 정의 전에 하스켈처럼 선언할대 타입 힌트를 줄 수 있게 할까?
 ```
 fun:int
-fun 3 2 = "hi" // Compile error!
-fun $a $b = 3
+fun(3, 2) = "hi" // Compile error!
+fun($a, $b) = 3
 ```
 
 ## 타입
@@ -126,7 +139,7 @@ fun $a $b = 3
 
 ```
 type Person(name:string, age:int) {
-    .say = print name
+    .say() = print(name)
 }
 ```
 
@@ -134,65 +147,20 @@ type Person(name:string, age:int) {
 
 철학 이전에 생각해야 할것은 연산자(?) 결합 순위이다. 패턴을 호출하는데 어떤게 먼저 결합해야할지 순서가 정확히 없으면 진짜 개판이 될 텐데..
 
-굳이 람다 대수처럼 괄호를 안쓰는 방향을 지향할 필요가 있을까 ..? 타입 생성자가 괄호를 사용하는데 이는 structing 을 위해 특별한 케이스로 봐도 괜ㅊ낳을거띾
-
-아님 함수(패턴)을 선언할 때 굳이 괄호를 쓰고 싶다면 **지금처럼 한다면** 이렇게 써도 되긴 하지
-
-```
-fib `( 0 `) = 1
-fib `( 1 `) = 1
-fib `( $n:int `) = fib(n-1) + fib(n-2)
-```
-
-그치만 이렇게 하면 익숙하긴 하지만 .... 
-그리고 괄호를 안쓰거나 쓰는 쪽이 막 섞이면 안돼니까 아마도 한쪽으로 방향을 아예 정해야 할듯.
-
-그치만 저거 괄호를 강제하지 않아도 결국 괄호를 쓰는 경우는 쓸테니까 그러면 복잡해지려나 ??
+강제는 아니지만 이런 규칙을 사용하자.
+일반적으로 변수로 사용되는 패턴은 이름만 있을 테고 메서드처럼 사용되는 패턴은 이름 뒤에 괄호로 시작하고 괄호로 끝나야 함.
 
 ```
-// print(a(1+1, -b(c), d) 는 다음과 같다
-print ((a (1+1)) -(b c)) d
+// RECOMMENDED
+a = 0
+a([]) = 0
+a{} = 0
 
-// 한눈에 봐도 괄호와 콤마로 구분하는게 더 알아보기 쉽잖아??
+// NOT RECOMMENDED
+a([)] = 1
+a 1 = 1
 ```
 
-하스켈 같은 경우는 `.` 와 `$` 신택스가 있어서 저런 경우는 괄호가 많지 않아도 잘 표현할 수 있었는데 여기서는 베이스 문법에서 그런건 제공하지 않을 거니까 어떻게 해야할지 모르겟다 ....
-
-## 메서드 정의 패턴
-
-기차에서 좋은 생각이 났다!! 메서드를 정의하는 패턴을 정의하는 것이다. 예를 들어 `fn` 패턴이라 하자.
-
-```
-type Method(name, params, inner) {
-    .ctor = {
-        $name $params = { $inner }
-    }
-    `( given `) = name given
-}
-
-fn $name `( `) `{ $inner `} = { 
-    Method($name, [], $inner)
-    // 이거 스코프가 밖까지 나가야함. ..,,, 패턴 내에서 패턴 생성 어뜨케 할까 ?
-    // 라고 처음엔 생각했지만 약간 생각이 바뀜. 이거 좀 쩔어
-    // Method의 생성자에서 name params 의 패턴이 생성되고 이게 멤버 변수임
-    // 그리고 Method를 호출하는 두번째 패턴에서 그걸 사용하는거지
-}
-
-fn $name `( $first(`:$ftyp:type)? (`, ($exprs(`:$typ:type)?)* `) `{ $inner `} = {
-    Method($name, [$first`:$ftyp, *[($exprs`:$typ)*]], $inner)
-}
-
-fn say(msg:string, from:string) {
-    print(from, ": ", msg)
-}
-
-say("Hey!", "John") // 요로코롬 호출 가능함 \(>ㅡ<)/
-```
-
-근데 원래 있었던 패턴 매칭은 어떻게 되는 거지
-
-### 문제점
-피보나치 패턴 정의했던 것처럼 패턴을 정의할 수 있을 텐데 이렇게 메서드 정의 패턴을 만들면 여기서 메서드는 패턴 매치가 되게끔 만들어야 할텐데
 
 ## 파라미터 -> expression/value 매칭?
 
@@ -202,16 +170,16 @@ say("Hey!", "John") // 요로코롬 호출 가능함 \(>ㅡ<)/
 파라미터를 식 트리로 받는 간단한 예. 사실 러스트에서 보고 만든게 맞음.
 
 ```
-log $val:expr = print $val.tostr " : " $val.val
+log($val:expr) = print $val.tostr " : " $val.val
 
-log (1 + 1) // print "(1 + 1) : 2"
+log(1 + 1) // print "1 + 1 : 2"
 ```
 
 그치만 이걸 이렇게 받으면 당근 문제가 생김.
 
 ```
-ho $n:expr = print "epr"
-ho $n:obj = print "val"
+ho($n:expr) = print("epr")
+ho($n:obj) = print("val")
 ```
 
 ho 패턴에 어떤 값을 넣던 어떤 게 먼저 실행될까 ,, ? 아마 이거는 먼저 선언된 패턴 위주로 실행될 테지만 그래도 이거 되게 괴로울 것 같다.
