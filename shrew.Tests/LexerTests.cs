@@ -29,7 +29,7 @@ namespace shrew.Tests
             AssertLex("false", new Tok[] { TokFact.KeywordToken(Typ.FalseKeyword) });
         }
 
-        [TestCategory("Lexing"), TestMethod]
+        [TestCategory("Lexer"), TestMethod]
         public void TestNumericExpressionLexing()
         {
             AssertLex("1+1", new Tok[]
@@ -60,7 +60,9 @@ namespace shrew.Tests
 
         private void AssertLex(string code, Tok[] lexed)
         {
-            CollectionAssert.AreEqual(lexed, Lexing.Lexer.Lex(code));
+            var actual = Lexing.Lexer.Lex(code);
+            lexed[0].Equals(actual[0]);
+            CollectionAssert.AreEqual(lexed, actual);
         }
     }
 }

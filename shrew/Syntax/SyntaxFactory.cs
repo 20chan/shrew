@@ -14,7 +14,7 @@ namespace shrew.Syntax
 
             for (var typ = FirstToken; typ <= LastToken; typ++)
             {
-                _tokens[(int)typ] = new SyntaxToken(typ);
+                _tokens[typ - FirstToken] = new SyntaxToken(typ);
             }
         }
 
