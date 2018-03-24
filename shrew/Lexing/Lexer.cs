@@ -19,16 +19,11 @@ namespace shrew.Lexing
         private char Pop() => _code[_index++];
         private bool IsEOF => _code.Length == _index;
 
-        public static SyntaxToken[] Lex(string code)
+        public static IEnumerable<SyntaxToken> Lex(string code)
         {
-            IEnumerable<SyntaxToken> LexIterator()
-            {
-                var lexer = new Lexer(code);
-                while (!lexer.IsEOF)
-                    yield return lexer.Lex();
-            }
-
-            return LexIterator().ToArray();
+            var lexer = new Lexer(code);
+            while (!lexer.IsEOF)
+                yield return lexer.Lex();
         }
 
         private void Error()

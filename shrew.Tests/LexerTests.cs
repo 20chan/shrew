@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using TokFact = shrew.Syntax.SyntaxFactory;
@@ -61,8 +61,7 @@ namespace shrew.Tests
         private void AssertLex(string code, Tok[] lexed)
         {
             var actual = Lexing.Lexer.Lex(code);
-            lexed[0].Equals(actual[0]);
-            CollectionAssert.AreEqual(lexed, actual);
+            CollectionAssert.AreEqual(lexed, actual.ToArray());
         }
     }
 }
