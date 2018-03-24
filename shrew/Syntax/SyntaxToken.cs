@@ -6,7 +6,7 @@
 
         public int FullWidth { get; set; }
 
-        protected SyntaxToken(SyntaxTokenType type)
+        internal SyntaxToken(SyntaxTokenType type)
         {
             TokenType = type;
             FullWidth = Text.Length;
@@ -27,14 +27,17 @@
             {
                 switch (TokenType)
                 {
-                    case SyntaxTokenType.TrueLiteral:
+                    case SyntaxTokenType.TrueKeyword:
                         return true;
-                    case SyntaxTokenType.FalseLiteral:
+                    case SyntaxTokenType.FalseKeyword:
                         return false;
                     default:
                         return Text;
                 }
             }
         }
+
+        internal static SyntaxToken WithValue<T>(SyntaxTokenType type, string text, T value)
+            => new SyntaxTokenWithValue<T>(type, text, value);
     }
 }

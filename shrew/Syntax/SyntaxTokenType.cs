@@ -5,7 +5,16 @@
         None = 0,
         IntegerLiteral,
         RealLiteral,
-        TrueLiteral,
-        FalseLiteral,
+
+        KnownKeywordStart,
+
+        PlusToken = KnownKeywordStart,
+        MinusToken,
+        AsteriskToken,
+        SlashToken,
+        TrueKeyword,
+        FalseKeyword,
+
+        KnownKeywordEnd = FalseKeyword,
     }
 }
