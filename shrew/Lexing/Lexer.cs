@@ -7,6 +7,7 @@ namespace shrew.Lexing
 {
     public class Lexer
     {
+        public string Code => _code;
         protected string _code;
         private int _index;
 
@@ -56,6 +57,8 @@ namespace shrew.Lexing
                     return SyntaxFactory.KeywordToken(SyntaxTokenType.AsteriskToken);
                 case '/':
                     return SyntaxFactory.KeywordToken(SyntaxTokenType.SlashToken);
+                case '=':
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.AssignToken);
                 case ' ':
                 case '\t':
                 case '\r':

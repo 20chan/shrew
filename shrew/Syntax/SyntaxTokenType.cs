@@ -12,6 +12,7 @@
         MinusToken,
         AsteriskToken,
         SlashToken,
+        AssignToken,
         TrueKeyword,
         FalseKeyword,
 

@@ -30,6 +30,8 @@ namespace shrew.Syntax
                     return "*";
                 case SyntaxTokenType.SlashToken:
                     return "/";
+                case SyntaxTokenType.AssignToken:
+                    return "=";
                 case SyntaxTokenType.TrueKeyword:
                     return "true";
                 case SyntaxTokenType.FalseKeyword:

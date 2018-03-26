@@ -103,6 +103,33 @@ namespace shrew.Tests
         {
             AssertLexError("1.16.1");
         }
+
+        [TestCategory("Lexer"), TestMethod]
+        public void TestAssign()
+        {
+            AssertLex("a = 1 + 1", new Tok[]
+            {
+                TokFact.Identifier("a"),
+                TokFact.KeywordToken(Typ.AssignToken),
+                TokFact.Literal("1", 1),
+                TokFact.KeywordToken(Typ.PlusToken),
+                TokFact.Literal("1", 1)
+            });
+            AssertLex(@"a = 1 + 1
+b = a + 1", new Tok[]
+            {
+                TokFact.Identifier("a"),
+                TokFact.KeywordToken(Typ.AssignToken),
+                TokFact.Literal("1", 1),
+                TokFact.KeywordToken(Typ.PlusToken),
+                TokFact.Literal("1", 1),
+                TokFact.Identifier("b"),
+                TokFact.KeywordToken(Typ.AssignToken),
+                TokFact.Identifier("a"),
+                TokFact.KeywordToken(Typ.PlusToken),
+                TokFact.Literal("1", 1),
+            });
+        }
         
         private void AssertLex(string code, Tok[] lexed)
         {
