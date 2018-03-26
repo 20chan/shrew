@@ -40,6 +40,9 @@
         internal static SyntaxToken WithValue<T>(SyntaxTokenType type, string text, T value)
             => new SyntaxTokenWithValue<T>(type, text, value);
 
+        internal static SyntaxToken Identifier(string name)
+            => new SyntaxIdentifier(SyntaxTokenType.Identifier, name);
+
         public override bool Equals(object obj)
         {
             var tok = obj as SyntaxToken;
@@ -51,10 +54,9 @@
                 return false;
             if (tok.Value.GetType() != Value.GetType())
                 return false;
-            if (tok.Value.GetType().IsValueType
-                ? !tok.Value.Equals(Value)
-                : tok.Value != Value)
+            if (!tok.Value.Equals(Value))
                 return false;
+            
             return true;
         }
     }

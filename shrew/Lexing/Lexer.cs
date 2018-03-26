@@ -75,7 +75,11 @@ namespace shrew.Lexing
                     return LexNumeric();
                 default:
                     _index--;
-                    return LexIdentifier();
+                    if (char.IsLetterOrDigit(Peek) || Peek == '_')
+                        return LexIdentifier();
+                    else
+                        Error();
+                    return null;
             }
         }
 
@@ -134,8 +138,7 @@ namespace shrew.Lexing
             else if (text == "false")
                 return SyntaxFactory.KeywordToken(SyntaxTokenType.FalseKeyword);
             else
-                Error();
-            return null;
+                return SyntaxFactory.Identifier(text);
         }
     }
 }

@@ -16,7 +16,7 @@
         FalseKeyword,
 
         KnownKeywordEnd = FalseKeyword,
-
+        Identifier,
         EOF,
     }
 }

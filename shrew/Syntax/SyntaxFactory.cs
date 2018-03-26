@@ -47,5 +47,8 @@ namespace shrew.Syntax
 
         public static SyntaxToken Literal(string text, float value)
             => SyntaxToken.WithValue(SyntaxTokenType.RealLiteral, text, value);
+
+        public static SyntaxToken Identifier(string name)
+            => SyntaxToken.Identifier(name);
     }
 }

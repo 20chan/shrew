@@ -74,15 +74,42 @@ namespace shrew.Tests
         }
 
         [TestCategory("Lexer"), TestMethod]
+        public void TestIdentifier()
+        {
+            AssertLex("a", new Tok[] { TokFact.Identifier("a") });
+            AssertLex("main", new Tok[] { TokFact.Identifier("main") });
+            AssertLex("foo12", new Tok[] { TokFact.Identifier("foo12") });
+            AssertLex("pi_is_314_sure", new Tok[] { TokFact.Identifier("pi_is_314_sure") });
+            AssertLex("a + 1", new Tok[]
+            {
+                TokFact.Identifier("a"),
+                TokFact.KeywordToken(Typ.PlusToken),
+                TokFact.Literal("1", 1),
+            });
+            AssertLex("1 + a + b*3", new Tok[]
+            {
+                TokFact.Literal("1", 1),
+                TokFact.KeywordToken(Typ.PlusToken),
+                TokFact.Identifier("a"),
+                TokFact.KeywordToken(Typ.PlusToken),
+                TokFact.Identifier("b"),
+                TokFact.KeywordToken(Typ.AsteriskToken),
+                TokFact.Literal("3", 3),
+            });
+        }
+
+        [TestCategory("Lexer"), TestMethod]
         public void TestError()
         {
             AssertLexError("1.16.1");
-            AssertLexError("1f");
         }
-
+        
         private void AssertLex(string code, Tok[] lexed)
         {
             var actual = Lexer.Lex(code);
+            var l = lexed[0];
+            var r = actual.First();
+            l.Equals(r);
             CollectionAssert.AreEqual(lexed, actual.ToArray());
         }
 
