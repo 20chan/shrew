@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using shrew.Lexing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using TokFact = shrew.Syntax.SyntaxFactory;
@@ -15,7 +16,7 @@ namespace shrew.Tests
         {
             AssertLex("0", new Tok[] { TokFact.Literal("0", 0) });
             AssertLex("012", new Tok[] { TokFact.Literal("012", 12) });
-            AssertLex("0.11", new Tok[] { TokFact.Literal("0.11", 0.11f)});
+            AssertLex("0.11", new Tok[] { TokFact.Literal("0.11", 0.11f) });
         }
 
         [TestCategory("Lexer"), TestMethod]
@@ -27,6 +28,20 @@ namespace shrew.Tests
             AssertLex("/", new Tok[] { TokFact.KeywordToken(Typ.SlashToken) });
             AssertLex("true", new Tok[] { TokFact.KeywordToken(Typ.TrueKeyword) });
             AssertLex("false", new Tok[] { TokFact.KeywordToken(Typ.FalseKeyword) });
+        }
+
+        [TestCategory("Lexer"), TestMethod]
+        public void TestWhitespacesLexing()
+        {
+            AssertLex("  1", new Tok[] { TokFact.Literal("1", 1) });
+            AssertLex("1  ", new Tok[] { TokFact.Literal("1", 1) });
+            AssertLex("  1  ", new Tok[] { TokFact.Literal("1", 1) });
+            AssertLex("  1   +  1  ", new Tok[]
+            {
+                TokFact.Literal("1", 1),
+                TokFact.KeywordToken(Typ.PlusToken),
+                TokFact.Literal("1", 1)
+            });
         }
 
         [TestCategory("Lexer"), TestMethod]
@@ -58,10 +73,22 @@ namespace shrew.Tests
             });
         }
 
+        [TestCategory("Lexer"), TestMethod]
+        public void TestError()
+        {
+            AssertLexError("1.16.1");
+            AssertLexError("1f");
+        }
+
         private void AssertLex(string code, Tok[] lexed)
         {
-            var actual = Lexing.Lexer.Lex(code);
+            var actual = Lexer.Lex(code);
             CollectionAssert.AreEqual(lexed, actual.ToArray());
+        }
+
+        private void AssertLexError(string code)
+        {
+            Assert.ThrowsException<LexerException>(() => Lexer.Lex(code).ToArray());
         }
     }
 }

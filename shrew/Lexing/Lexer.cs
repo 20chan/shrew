@@ -17,7 +17,7 @@ namespace shrew.Lexing
 
         private char Peek => _code[_index];
         private char Pop() => _code[_index++];
-        private bool IsEOF => _code.Length == _index;
+        private bool IsEOF => _code.Length == _index || IsWhitespacesOnlyLeft();
 
         public static IEnumerable<SyntaxToken> Lex(string code)
         {
@@ -26,13 +26,26 @@ namespace shrew.Lexing
                 yield return lexer.Lex();
         }
 
+        private bool IsWhitespacesOnlyLeft()
+        {
+            if (_code.Length == _index) return true;
+            for (int idx=  _index; idx < _code.Length; idx++)
+            {
+                if (!char.IsWhiteSpace(_code, idx))
+                    return false;
+            }
+            return true;
+        }
+
         private void Error()
         {
-            throw new NotImplementedException();
+            throw new LexerException();
         }
 
         public SyntaxToken Lex()
         {
+            if (IsEOF)
+                Error();
             switch (Pop())
             {
                 case '+':
@@ -43,7 +56,11 @@ namespace shrew.Lexing
                     return SyntaxFactory.KeywordToken(SyntaxTokenType.AsteriskToken);
                 case '/':
                     return SyntaxFactory.KeywordToken(SyntaxTokenType.SlashToken);
-
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    return Lex();
                 case '0':
                 case '1':
                 case '2':
@@ -57,7 +74,8 @@ namespace shrew.Lexing
                     _index--;
                     return LexNumeric();
                 default:
-                    throw new NotImplementedException();
+                    _index--;
+                    return LexIdentifier();
             }
         }
 
@@ -87,11 +105,37 @@ namespace shrew.Lexing
             if (!char.IsNumber(Pop()))
                 Error();
 
-            while (!IsEOF && char.IsNumber(Pop())) ;
+            while (!IsEOF)
+            {
+                if (!char.IsNumber(Peek))
+                    break;
+                Pop();
+            }
             int len = _index - startIdx;
             // TODO: Span<char> 으로 대체되어야 함.
             var text = _code.Substring(startIdx, len);
             return SyntaxFactory.Literal(text, Convert.ToSingle(text));
+        }
+
+        private SyntaxToken LexIdentifier()
+        {
+            int start = _index;
+            while (!IsEOF)
+            {
+                if (Peek != '_' && !char.IsLetterOrDigit(Peek))
+                    break;
+
+                Pop();
+            }
+            int len = _index - start;
+            var text = _code.Substring(start, len);
+            if (text == "true")
+                return SyntaxFactory.KeywordToken(SyntaxTokenType.TrueKeyword);
+            else if (text == "false")
+                return SyntaxFactory.KeywordToken(SyntaxTokenType.FalseKeyword);
+            else
+                Error();
+            return null;
         }
     }
 }
