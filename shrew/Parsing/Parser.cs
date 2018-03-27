@@ -33,6 +33,7 @@ namespace shrew.Parsing
         {
             _lexer = lexer;
             _lexer.Initialize();
+            _tokens = Lexer.Lex(lexer.Code).ToArray();
         }
 
         protected void Error()
@@ -47,13 +48,12 @@ namespace shrew.Parsing
 
         protected StmtsNode ParseStmts()
         {
-            IEnumerable<SyntaxNode> iterator()
-            {
-                while (!IsEOF)
-                    yield return Parse();
-            }
+            var nodes = new List<SyntaxNode>();
 
-            return new StmtsNode(iterator().ToArray());
+            while (!IsEOF)
+                nodes.Add(Parse());
+
+            return new StmtsNode(nodes.ToArray());
         }
 
         protected SyntaxNode Parse()
@@ -90,7 +90,7 @@ namespace shrew.Parsing
         {
             var lexpr = ParseFactor();
             if (IsEOF) return lexpr;
-            if (TopType == SyntaxTokenType.AssignToken || TopType == SyntaxTokenType.SlashToken)
+            if (TopType == SyntaxTokenType.AsteriskToken || TopType == SyntaxTokenType.SlashToken)
             {
                 var op = Pop();
                 var rexpr = ParseTerm();
@@ -112,6 +112,8 @@ namespace shrew.Parsing
             if (TopType == SyntaxTokenType.Identifier)
                 return new IdentifierNode(Pop());
             if (TopType == SyntaxTokenType.IntegerLiteral || TopType == SyntaxTokenType.RealLiteral)
+                return new LiteralNode(Pop());
+            if (TopType == SyntaxTokenType.TrueKeyword || TopType == SyntaxTokenType.FalseKeyword)
                 return new LiteralNode(Pop());
 
             Error();

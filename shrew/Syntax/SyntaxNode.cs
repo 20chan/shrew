@@ -23,7 +23,7 @@
                 return false;
             for (int i = 0; i < Nodes.Length; i++)
             {
-                if (Nodes[i] != node.Nodes[i])
+                if (!(Nodes[i].Equals(node.Nodes[i])))
                     return false;
             }
 
@@ -47,9 +47,9 @@
             var node = obj as AssignNode;
             if (node == null)
                 return false;
-            if (Left != node.Left)
+            if (!(Left.Equals(node.Left)))
                 return false;
-            if (Right != node.Right)
+            if (!(Right.Equals(node.Right)))
                 return false;
             return true;
         }
@@ -77,11 +77,11 @@
             var node = obj as BinaryExprNode;
             if (node == null)
                 return false;
-            if (Left != node.Left)
+            if (!(Left.Equals(node.Left)))
                 return false;
-            if (Right != node.Right)
+            if (!(Right.Equals(node.Right)))
                 return false;
-            if (Operator != node.Operator)
+            if (!(Operator.Equals(node.Operator)))
                 return false;
             return true;
         }
@@ -101,7 +101,7 @@
             var node = obj as TokenNode;
             if (node == null)
                 return false;
-            if (Token != node.Token)
+            if (!(Token.Equals(node.Token)))
                 return false;
             return true;
         }
