@@ -43,6 +43,11 @@ namespace shrew.Lexing
             throw new LexerException();
         }
 
+        public void Initialize()
+        {
+            _index = 0;
+        }
+
         public SyntaxToken Lex()
         {
             if (IsEOF)
@@ -59,6 +64,10 @@ namespace shrew.Lexing
                     return SyntaxFactory.KeywordToken(SyntaxTokenType.SlashToken);
                 case '=':
                     return SyntaxFactory.KeywordToken(SyntaxTokenType.AssignToken);
+                case '(':
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.LParenToken);
+                case ')':
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.RParenToken);
                 case ' ':
                 case '\t':
                 case '\r':

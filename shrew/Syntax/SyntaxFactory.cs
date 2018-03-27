@@ -32,6 +32,10 @@ namespace shrew.Syntax
                     return "/";
                 case SyntaxTokenType.AssignToken:
                     return "=";
+                case SyntaxTokenType.LParenToken:
+                    return "(";
+                case SyntaxTokenType.RParenToken:
+                    return ")";
                 case SyntaxTokenType.TrueKeyword:
                     return "true";
                 case SyntaxTokenType.FalseKeyword:

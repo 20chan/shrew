@@ -1,0 +1,94 @@
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using shrew.Parsing;
+using shrew.Syntax;
+
+using SynFact = shrew.Syntax.SyntaxFactory;
+
+namespace shrew.Tests
+{
+    [TestClass]
+    public class ParserTests
+    {
+        [TestCategory("Parser"), TestMethod]
+        public void TestParseLiteralIdentifier()
+        {
+            AssertParse("1", new LiteralNode(SynFact.Literal("1", 1)));
+            AssertParse("true", new LiteralNode(SynFact.KeywordToken(SyntaxTokenType.TrueKeyword)));
+            AssertParse("false", new LiteralNode(SynFact.KeywordToken(SyntaxTokenType.FalseKeyword)));
+            AssertParse("abcd", new LiteralNode(SynFact.Identifier("abcd")));
+        }
+
+        [TestCategory("Parser"), TestMethod]
+        public void TestParseExpression()
+        {
+            AssertParse("1+1",
+                new BinaryExprNode(
+                    new LiteralNode(SynFact.Literal("1", 1)),
+                    new LiteralNode(SynFact.Literal("1", 1)),
+                SynFact.KeywordToken(SyntaxTokenType.PlusToken)));
+
+            AssertParse("1+2*3",
+                new BinaryExprNode(
+                    new LiteralNode(SynFact.Literal("1", 1)),
+                    new BinaryExprNode(
+                        new LiteralNode(SynFact.Literal("2", 2)),
+                        new LiteralNode(SynFact.Literal("3", 3)),
+                        SynFact.KeywordToken(SyntaxTokenType.AsteriskToken)),
+                SynFact.KeywordToken(SyntaxTokenType.PlusToken)));
+
+            AssertParse("(1+2)*3",
+                new BinaryExprNode(
+                    new BinaryExprNode(
+                        new LiteralNode(SynFact.Literal("1", 1)),
+                        new LiteralNode(SynFact.Literal("2", 2)),
+                        SynFact.KeywordToken(SyntaxTokenType.AsteriskToken)),
+                    new LiteralNode(SynFact.Literal("3", 3)),
+                SynFact.KeywordToken(SyntaxTokenType.PlusToken)));
+        }
+
+        [TestCategory("Parser"), TestMethod]
+        public void TestParseAssignment()
+        {
+            AssertParse("a = 1",
+                new AssignNode(
+                    new IdentifierNode(SynFact.Identifier("a")),
+                    new LiteralNode(SynFact.Literal("1", 1))));
+
+            AssertParse("a = b * 1.5",
+                new AssignNode(
+                    new IdentifierNode(SynFact.Identifier("a")),
+                    new BinaryExprNode(
+                        new LiteralNode(SynFact.Identifier("b")),
+                        new LiteralNode(SynFact.Literal("1.5", 1.5f)),
+                    SynFact.KeywordToken(SyntaxTokenType.PlusToken))));
+        }
+
+        [TestCategory("Parser"), TestMethod]
+        public void TestParseStatements()
+        {
+            AssertParse("a = 1 b = 2",
+                new AssignNode(
+                    new IdentifierNode(SynFact.Identifier("a")),
+                    new LiteralNode(SynFact.Literal("1", 1))),
+                new AssignNode(
+                    new IdentifierNode(SynFact.Identifier("b")),
+                    new LiteralNode(SynFact.Literal("2", 1))));
+
+            AssertParse("a = 1 1 + 2",
+                new AssignNode(
+                    new IdentifierNode(SynFact.Identifier("a")),
+                    new LiteralNode(SynFact.Literal("1", 1))),
+                new BinaryExprNode(
+                    new LiteralNode(SynFact.Literal("1", 1)),
+                    new LiteralNode(SynFact.Literal("1", 1)),
+                SynFact.KeywordToken(SyntaxTokenType.PlusToken)));
+        }
+
+        private void AssertParse(string code, params SyntaxNode[] nodes)
+        {
+            var actual = Parser.Parse(code);
+            Assert.Equals(actual, new StmtsNode(nodes));
+        }
+    }
+}

@@ -13,6 +13,8 @@
         AsteriskToken,
         SlashToken,
         AssignToken,
+        LParenToken,
+        RParenToken,
         TrueKeyword,
         FalseKeyword,
 
