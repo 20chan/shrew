@@ -5,7 +5,7 @@ namespace shrew.Tests
     [TestClass]
     public class EngineTests
     {
-        [TestCategory("Engine"), TestCategory("Execute"), TestMethod]
+        [TestCategory("Engine"), TestMethod]
         public void TestExecution()
         {
             Assert.AreEqual(0, Engine.Execute("main = 0"));
@@ -13,7 +13,7 @@ namespace shrew.Tests
             Assert.AreEqual(30, Engine.Execute("main = 3 * 10"));
         }
 
-        [TestCategory("Engine"), TestCategory("Variable"), TestMethod]
+        [TestCategory("Engine"), TestMethod]
         public void TestVariable()
         {
             Assert.AreEqual(1, new Engine("a = 1")["a"].DynamicInvoke());
@@ -21,7 +21,7 @@ namespace shrew.Tests
             Assert.AreEqual(3, new Engine("a = 1\nb = a + 2")["b"].DynamicInvoke());
         }
 
-        [TestCategory("Engine"), TestCategory("Expression"), TestMethod]
+        [TestCategory("Engine"), TestMethod]
         public void TestIntegerExpr()
         {
             Assert.AreEqual(0, Engine.EvaluateExpr("0"));
@@ -31,7 +31,7 @@ namespace shrew.Tests
             Assert.AreEqual(10, Engine.EvaluateExpr("1 + 2 + 3 + 4"));
         }
 
-        [TestCategory("Engine"), TestCategory("Expression"), TestMethod]
+        [TestCategory("Engine"), TestMethod]
         public void TestRealExpr()
         {
             Assert.AreEqual(0f, Engine.EvaluateExpr("0.0"));
@@ -42,7 +42,7 @@ namespace shrew.Tests
             Assert.AreEqual(6f, Engine.EvaluateExpr<float>("0.1 + 0.2 - 0.3"), 0.0001f);
         }
 
-        [TestCategory("Engine"), TestCategory("Expression"), TestMethod]
+        [TestCategory("Engine"), TestMethod]
         public void TestParenExpr()
         {
             Assert.AreEqual(0, Engine.EvaluateExpr("(0)"));
