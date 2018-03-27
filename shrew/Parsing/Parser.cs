@@ -7,7 +7,7 @@ namespace shrew.Parsing
 {
     public class Parser
     {
-        private Lexer _lexer;
+        private readonly string _code;
         private SyntaxToken[] _tokens;
         private int _index;
 
@@ -29,11 +29,10 @@ namespace shrew.Parsing
                 Error();
         }
 
-        public Parser(Lexer lexer)
+        public Parser(string code)
         {
-            _lexer = lexer;
-            _lexer.Initialize();
-            _tokens = Lexer.Lex(lexer.Code).ToArray();
+            _code = code;
+            _tokens = Lexer.Lex(code).ToArray();
         }
 
         protected void Error()
@@ -43,7 +42,7 @@ namespace shrew.Parsing
 
         public static SyntaxNode Parse(string code)
         {
-            return new Parser(new Lexer(code)).ParseStmts();
+            return new Parser(code).ParseStmts();
         }
 
         protected StmtsNode ParseStmts()
