@@ -16,9 +16,17 @@ namespace shrew.Tests
         [TestCategory("Engine"), TestMethod]
         public void TestVariable()
         {
-            Assert.AreEqual(1, new Engine("a = 1")["a"].DynamicInvoke());
-            Assert.AreEqual(2, new Engine("a = 1 + 1")["a"].DynamicInvoke());
-            Assert.AreEqual(3, new Engine("a = 1\nb = a + 2")["b"].DynamicInvoke());
+            var engine = new Engine("a = 1");
+            engine.ExecuteAllStmts();
+            Assert.AreEqual(1, engine["a"].DynamicInvoke());
+
+            engine = new Engine("a = 1 + 1");
+            engine.ExecuteAllStmts();
+            Assert.AreEqual(2, engine["a"].DynamicInvoke());
+
+            engine = new Engine("a = 1\nb = a + 2");
+            engine.ExecuteAllStmts();
+            Assert.AreEqual(3, engine["b"].DynamicInvoke());
         }
 
         [TestCategory("Engine"), TestMethod]
@@ -39,7 +47,7 @@ namespace shrew.Tests
             Assert.AreEqual(3.14f, Engine.EvaluateExpr("3.14"));
             Assert.AreEqual(10f, Engine.EvaluateExpr("10.0000"));
             Assert.AreEqual(6f, Engine.EvaluateExpr("1 + 2 + 3.0"));
-            Assert.AreEqual(6f, Engine.EvaluateExpr<float>("0.1 + 0.2 - 0.3"), 0.0001f);
+            Assert.AreEqual(0f, Engine.EvaluateExpr<float>("0.1 + 0.2 - 0.3"), 0.0001f);
         }
 
         [TestCategory("Engine"), TestMethod]
