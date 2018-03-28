@@ -16,6 +16,12 @@ namespace shrew
             VariableTable = new Dictionary<string, Func<object>>();
         }
 
+        public Engine()
+        {
+            RootNode = null;
+            VariableTable = new Dictionary<string, Func<object>>();
+        }
+
         /// <summary>
         /// Execute code
         /// </summary>
@@ -103,6 +109,21 @@ namespace shrew
             {
                 throw new Exception();
             }
+        }
+
+        public object ExecuteOrEvaluate(string code)
+        {
+            var node = Parser.Parse(code) as StmtsNode;
+            int i = 0;
+            for (; i < node.Nodes.Length - 1; i++)
+                ExecuteStmt(node.Nodes[i]);
+            var expr = node.Nodes[i] as ExprNode;
+            if (expr == null)
+            {
+                ExecuteStmt(node.Nodes[i]);
+                return null;
+            }
+            return EvaluateExpr(expr);
         }
 
         /// <summary>
