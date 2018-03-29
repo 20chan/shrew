@@ -45,7 +45,7 @@ namespace shrew.Parsing
             return new Parser(code).ParseStmts();
         }
 
-        protected StmtsNode ParseStmts()
+        internal StmtsNode ParseStmts()
         {
             var nodes = new List<SyntaxNode>();
 

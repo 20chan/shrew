@@ -8,18 +8,22 @@ namespace shrew
 {
     public class Engine
     {
-        public Dictionary<string, Func<object>> VariableTable;
+        private SymbolTable _table;
         public StmtsNode RootNode;
+
+        private Parser _parser;
+
         public Engine(string code)
         {
-            RootNode = Parser.Parse(code) as StmtsNode;
-            VariableTable = new Dictionary<string, Func<object>>();
+            _parser = new Parser(code);
+            RootNode = _parser.ParseStmts();
+            _table = new SymbolTable();
         }
 
         public Engine()
         {
             RootNode = null;
-            VariableTable = new Dictionary<string, Func<object>>();
+            _table = new SymbolTable();
         }
 
         /// <summary>
@@ -30,7 +34,7 @@ namespace shrew
         {
             var interpreter = new Engine(code);
             interpreter.ExecuteAllStmts();
-            return interpreter.Get<int>("main");
+            return (int)interpreter.Get("main").DynamicInvoke();
         }
 
         /// <summary>
@@ -66,7 +70,7 @@ namespace shrew
             if (node is AssignNode)
             {
                 var assign = node as AssignNode;
-                Set(assign.Left.Token.Text, EvaluateExpr(assign.Right));
+                Set(assign.Left.Token.Text, (Func<object>)(() => EvaluateExpr(assign.Right)));
             }
             else
             {
@@ -103,7 +107,7 @@ namespace shrew
             else if (node is IdentifierNode)
             {
                 var id = node as IdentifierNode;
-                return Get(id.Token.Text);
+                return Get(id.Token.Text).DynamicInvoke();
             }
             else
             {
@@ -131,21 +135,13 @@ namespace shrew
         /// </summary>
         public Delegate this[string name]
         {
-            get => VariableTable[name];
+            get => Get(name);
         }
 
-        protected T Get<T>(string name)
-            => (T)Get(name);
+        protected Delegate Get(string name)
+            => _table.Get(name);
 
-        protected object Get(string name)
-            => VariableTable[name]();
-
-        protected void Set(string name, object value)
-        {
-            if (VariableTable.ContainsKey(name))
-                VariableTable[name] = () => value;
-            else
-                VariableTable.Add(name, () => value);
-        }
+        protected void Set(string name, Delegate value)
+            => _table.Set(name, value);
     }
 }
