@@ -122,8 +122,8 @@ namespace shrew.Tests
                     BIN(
                         CALL("a"),
                         BIN(
-                            CALL("a"),
                             CALL("b"),
+                            CALL("c"),
                             PlusToken),
                         PlusToken)),
                 ASGN(

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using shrew.Lexing;
 using shrew.Syntax;
@@ -61,59 +62,121 @@ namespace shrew.Parsing
 
         protected SyntaxNode Parse()
         {
-            var lexpr = ParseExpr();
-            if (IsEOF) return lexpr;
+            var idQueue = new Queue<IdentifierNode>();
+            var startIndex = _index;
+            bool isExpr = false;
 
-            if (Peek().TokenType == SyntaxTokenType.AssignToken)
+            if (IsEOF) Error();
+            do
             {
-                Eat(SyntaxTokenType.AssignToken);
-                if (!(lexpr is IdentifierNode))
-                    Error();
-                var rexpr = ParseExpr();
-                return new AssignNode(new[] { lexpr as IdentifierNode }, rexpr);
+                if (Peek().TokenType != SyntaxTokenType.Identifier)
+                {
+                    // AssignToken => it's not expr
+                    isExpr = Peek().TokenType != SyntaxTokenType.AssignToken;
+                    break;
+                }
+                idQueue.Enqueue(new IdentifierNode(Pop()));
+            }
+            while (!IsEOF && !isExpr && Peek().TokenType != SyntaxTokenType.AssignToken);
+
+            if (!isExpr)
+            {
+                if (IsEOF)
+                    isExpr = true;
+                else if (Peek().TokenType != SyntaxTokenType.AssignToken)
+                    isExpr = true;
+            }
+            if (isExpr)
+            {
+                _index = startIndex;
+                return ParseExpr(null);
             }
 
-            return lexpr;
+            Eat(SyntaxTokenType.AssignToken);
+            var ids = idQueue.ToArray();
+            var localScope = new SymbolTypes();
+            foreach (var p in ids.Skip(1))
+                localScope.Add(p.Token.Text);
+            var rexpr = ParseExpr(localScope);
+            // TODO: 타입 추론
+            _globals.Add(ids[0].Token.Text, Enumerable.Repeat<Type>(null, ids.Length - 1).ToArray());
+            return new AssignNode(ids, rexpr);
         }
 
-        protected ExprNode ParseExpr()
+        protected ExprNode ParseExpr(SymbolTypes local)
         {
-            var lexpr = ParseTerm();
+            return ParseArith(local);
+        }
+
+        protected ExprNode ParseArith(SymbolTypes local)
+        {
+            var lexpr = ParseTerm(local);
             if (IsEOF) return lexpr;
             if (TopType == SyntaxTokenType.PlusToken || TopType == SyntaxTokenType.MinusToken)
             {
                 var op = Pop();
-                var rexpr = ParseExpr();
+                var rexpr = ParseArith(local);
                 return new BinaryExprNode(lexpr, rexpr, op);
             }
             return lexpr;
         }
 
-        protected ExprNode ParseTerm()
+        protected ExprNode ParseTerm(SymbolTypes local)
         {
-            var lexpr = ParseFactor();
+            var lexpr = ParseFactor(local, true);
             if (IsEOF) return lexpr;
             if (TopType == SyntaxTokenType.AsteriskToken || TopType == SyntaxTokenType.SlashToken)
             {
                 var op = Pop();
-                var rexpr = ParseTerm();
+                var rexpr = ParseTerm(local);
                 return new BinaryExprNode(lexpr, rexpr, op);
             }
             return lexpr;
         }
 
-        protected ExprNode ParseFactor()
+        protected CallNode ParseCall(SymbolTypes local)
+        {
+            var id = new IdentifierNode(Pop());
+            var name = id.Token.Text;
+            Type[] pattern = null;
+            var paramsQueue = new Queue<ExprNode>();
+
+            if (local != null && local.ContainsKey(name))
+                pattern = local[name];
+            else if (_globals.ContainsKey(name))
+                pattern = _globals[name];
+            else if (_builtins.ContainsKey(name))
+                pattern = _builtins[name];
+            else
+                Error();
+
+            for (int i = 0; i < pattern.Length; i++)
+            {
+                var p = ParseFactor(local, false);
+                // TODO: Type check
+                paramsQueue.Enqueue(p);
+            }
+
+            return new CallNode(id, paramsQueue.ToArray());
+        }
+        
+        protected ExprNode ParseFactor(SymbolTypes local, bool callAllowed)
         {
             if (TopType == SyntaxTokenType.LParenToken)
             {
                 Eat(SyntaxTokenType.LParenToken);
-                var expr = ParseExpr();
+                var expr = ParseExpr(local);
                 Eat(SyntaxTokenType.RParenToken);
 
                 return expr;
             }
             if (TopType == SyntaxTokenType.Identifier)
-                return new IdentifierNode(Pop());
+            {
+                if (callAllowed)
+                    return ParseCall(local);
+                else
+                    return new IdentifierNode(Pop());
+            }
             if (TopType == SyntaxTokenType.IntegerLiteral || TopType == SyntaxTokenType.RealLiteral)
                 return new LiteralNode(Pop());
             if (TopType == SyntaxTokenType.TrueKeyword || TopType == SyntaxTokenType.FalseKeyword)
