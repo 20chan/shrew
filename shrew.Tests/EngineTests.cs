@@ -10,9 +10,9 @@ namespace shrew.Tests
         [TestCategory("Engine"), TestMethod]
         public void TestExecution()
         {
-            Assert.AreEqual(0, Engine.Execute("main = 0"));
-            Assert.AreEqual(2, Engine.Execute("main = 1 + 1"));
-            Assert.AreEqual(30, Engine.Execute("main = 3 * 10"));
+            Assert.AreEqual(0, Execute("main = 0"));
+            Assert.AreEqual(2, Execute("main = 1 + 1"));
+            Assert.AreEqual(30, Execute("main = 3 * 10"));
         }
 
         [TestCategory("Engine"), TestMethod]
@@ -30,7 +30,9 @@ namespace shrew.Tests
             engine.ExecuteAllStmts();
             Assert.AreEqual(3, engine["b"].DynamicInvoke());
 
-            Assert.AreEqual(3, EvaluateExpr("a = 1\na+2"));
+            engine = new Engine("a=1");
+
+            Assert.AreEqual(3, engine.Evaluate("a+2"));
         }
 
         [TestCategory("Engine"), TestMethod]

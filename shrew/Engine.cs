@@ -43,20 +43,16 @@ namespace shrew
         /// <returns>Value of expression</returns>
         public static object EvaluateExpr(string code)
         {
-            var interpreter = new Engine(code);
-            int i;
-            for (i = 0; i < interpreter.RootNode.Nodes.Length - 1; i++)
-            {
-                interpreter.ExecuteStmt(interpreter.RootNode.Nodes[i]);
-            }
-            var last = interpreter.RootNode.Nodes[i] as ExprNode;
-            if (last == null)
-                return null;
-            return interpreter.EvaluateExpr(last);
+            return new Engine().Evaluate(code);
         }
 
         public static T EvaluateExpr<T>(string code)
             => (T)EvaluateExpr(code);
+
+        public object Evaluate(string code)
+        {
+            return EvaluateExpr(Parser.Parse(code) as ExprNode);
+        }
 
         public void ExecuteAllStmts()
         {
