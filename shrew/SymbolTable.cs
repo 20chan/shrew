@@ -6,14 +6,14 @@ namespace shrew
 {
     public class SymbolTable
     {
-        private Dictionary<string, Type[]> _symbols;
+        private SymbolTypes _symbols;
         private Dictionary<string, Delegate> _variables;
 
         private SymbolTable _parent;
 
         public SymbolTable(SymbolTable parent = null, Dictionary<string, Delegate> args = null)
         {
-            _symbols = new Dictionary<string, Type[]>();
+            _symbols = new SymbolTypes();
             _variables = new Dictionary<string, Delegate>();
             parent = _parent;
             if (args != null)

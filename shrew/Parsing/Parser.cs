@@ -8,6 +8,8 @@ namespace shrew.Parsing
     public class Parser
     {
         private readonly string _code;
+        private readonly SymbolTypes _builtins;
+        private readonly SymbolTypes _globals;
         private SyntaxToken[] _tokens;
         private int _index;
 
@@ -29,10 +31,12 @@ namespace shrew.Parsing
                 Error();
         }
 
-        public Parser(string code)
+        public Parser(string code, SymbolTypes builtins = null)
         {
             _code = code;
             _tokens = Lexer.Lex(code).ToArray();
+            _builtins = builtins ?? new SymbolTypes();
+            _globals = new SymbolTypes();
         }
 
         protected void Error()
@@ -40,9 +44,9 @@ namespace shrew.Parsing
             throw new ParserException();
         }
 
-        public static SyntaxNode Parse(string code)
+        public static SyntaxNode Parse(string code, SymbolTypes builtins = null)
         {
-            return new Parser(code).ParseStmts();
+            return new Parser(code, builtins).ParseStmts();
         }
 
         internal StmtsNode ParseStmts()
@@ -66,7 +70,7 @@ namespace shrew.Parsing
                 if (!(lexpr is IdentifierNode))
                     Error();
                 var rexpr = ParseExpr();
-                return new AssignNode(lexpr as IdentifierNode, rexpr);
+                return new AssignNode(new[] { lexpr as IdentifierNode }, rexpr);
             }
 
             return lexpr;

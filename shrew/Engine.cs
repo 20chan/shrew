@@ -70,7 +70,8 @@ namespace shrew
             if (node is AssignNode)
             {
                 var assign = node as AssignNode;
-                Set(assign.Left.Token.Text, (Func<object>)(() => EvaluateExpr(assign.Right)));
+
+                Set(assign.Left[0].Token.Text, (Func<object>)(() => EvaluateExpr(assign.Right)));
             }
             else
             {

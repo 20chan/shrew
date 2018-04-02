@@ -33,10 +33,10 @@
 
     public class AssignNode : SyntaxNode
     {
-        public IdentifierNode Left;
+        public readonly IdentifierNode[] Left;
         public ExprNode Right;
 
-        public AssignNode(IdentifierNode left, ExprNode right)
+        public AssignNode(IdentifierNode[] left, ExprNode right)
         {
             Left = left;
             Right = right;
@@ -47,8 +47,13 @@
             var node = obj as AssignNode;
             if (node == null)
                 return false;
-            if (!(Left.Equals(node.Left)))
+            if (Left.Length != node.Left.Length)
                 return false;
+            for(int i = 0; i < Left.Length; i++)
+            {
+                if (!Left[i].Equals(node.Left[i]))
+                    return false;
+            }
             if (!(Right.Equals(node.Right)))
                 return false;
             return true;
@@ -58,6 +63,41 @@
     public class ExprNode : SyntaxNode
     {
 
+    }
+
+    public class CallNode : ExprNode
+    {
+        public IdentifierNode Function;
+        public readonly ExprNode[] Parameters;
+
+        public CallNode(IdentifierNode function, params ExprNode[] parameters)
+        {
+            Function = function;
+            Parameters = parameters;
+        }
+
+        public CallNode(SyntaxToken identifier, params ExprNode[] parameters)
+        {
+            Function = new IdentifierNode(identifier);
+            Parameters = parameters;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var node = obj as CallNode;
+            if (node == null)
+                return false;
+            if (!Function.Equals(node.Function))
+                return false;
+            if (Parameters.Length != node.Parameters.Length)
+                return false;
+            for (int i = 0; i < Parameters.Length; i++)
+            {
+                if (!Parameters[i].Equals(node.Parameters[i]))
+                    return false;
+            }
+            return true;
+        }
     }
 
     public class BinaryExprNode : ExprNode
