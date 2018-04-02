@@ -9,7 +9,7 @@
     {
         public readonly SyntaxNode[] Nodes;
 
-        public StmtsNode(SyntaxNode[] nodes)
+        public StmtsNode(params SyntaxNode[] nodes)
         {
             Nodes = nodes;
         }
@@ -99,6 +99,8 @@
         public override bool Equals(object obj)
         {
             var node = obj as TokenNode;
+            if (GetType() != node.GetType())
+                return false;
             if (node == null)
                 return false;
             if (!(Token.Equals(node.Token)))

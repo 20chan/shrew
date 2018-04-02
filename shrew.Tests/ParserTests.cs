@@ -16,7 +16,7 @@ namespace shrew.Tests
             AssertParse("1", new LiteralNode(SynFact.Literal("1", 1)));
             AssertParse("true", new LiteralNode(SynFact.KeywordToken(SyntaxTokenType.TrueKeyword)));
             AssertParse("false", new LiteralNode(SynFact.KeywordToken(SyntaxTokenType.FalseKeyword)));
-            AssertParse("abcd", new LiteralNode(SynFact.Identifier("abcd")));
+            AssertParse("abcd", new IdentifierNode(SynFact.Identifier("abcd")));
         }
 
         [TestCategory("Parser"), TestMethod]
@@ -59,7 +59,7 @@ namespace shrew.Tests
                 new AssignNode(
                     new IdentifierNode(SynFact.Identifier("abcd")),
                     new BinaryExprNode(
-                        new LiteralNode(SynFact.Identifier("b")),
+                        new IdentifierNode(SynFact.Identifier("b")),
                         new LiteralNode(SynFact.Literal("1.5", 1.5f)),
                     SynFact.KeywordToken(SyntaxTokenType.AsteriskToken))));
         }
