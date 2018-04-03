@@ -37,6 +37,12 @@ namespace shrew
             }
         }
 
+        public void Add(string name, Delegate value)
+        {
+            _symbols.Add(name, value.Method.GetParameters().Select(p => p.ParameterType).ToArray());
+            _variables.Add(name, value);
+        }
+
         public void Set(string name, Delegate value)
         {
             var paramTypes = value.Method.GetParameters().Select(p => p.ParameterType).ToArray();
