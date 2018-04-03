@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace shrew
 {
-    public class SymbolTable
+    public class SymbolTable : IEnumerable<KeyValuePair<string, Delegate>>
     {
         internal SymbolTypes _symbols;
         private Dictionary<string, Delegate> _variables;
@@ -72,6 +73,16 @@ namespace shrew
             if (Parent != null)
                 return Parent.Get(name);
             throw new KeyNotFoundException();
+        }
+
+        public IEnumerator<KeyValuePair<string, Delegate>> GetEnumerator()
+        {
+            return ((IEnumerable<KeyValuePair<string, Delegate>>)_variables).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable<KeyValuePair<string, Delegate>>)_variables).GetEnumerator();
         }
     }
 }
