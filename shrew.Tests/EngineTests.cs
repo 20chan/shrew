@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using static shrew.Engine;
 
@@ -18,21 +20,22 @@ namespace shrew.Tests
         [TestCategory("Engine"), TestMethod]
         public void TestVariable()
         {
-            var engine = new Engine("a = 1");
-            engine.ExecuteAllStmts();
+            var engine = new Engine();
+            engine.ExecuteCode("a = 1");
             Assert.AreEqual(1, engine["a"].DynamicInvoke());
 
-            engine = new Engine("a = 1 + 1");
-            engine.ExecuteAllStmts();
+            engine = new Engine();
+            engine.ExecuteCode("a = 1 + 1");
             Assert.AreEqual(2, engine["a"].DynamicInvoke());
 
-            engine = new Engine("a = 1\nb = a + 2");
-            engine.ExecuteAllStmts();
+            engine = new Engine();
+            engine.ExecuteCode("a = 1\nb = a + 2");
             Assert.AreEqual(3, engine["b"].DynamicInvoke());
 
-            engine = new Engine("a=1");
+            engine = new Engine();
+            engine.ExecuteCode("a=1");
 
-            Assert.AreEqual(3, engine.Evaluate("a+2"));
+            Assert.AreEqual(3, engine.EvaluateCode("a+2"));
         }
 
         [TestCategory("Engine"), TestMethod]
@@ -71,7 +74,16 @@ namespace shrew.Tests
         [TestCategory("Engine"), TestMethod]
         public void TestParameter()
         {
+            var builtins = new SymbolTable(args: new Dictionary<string, Delegate>()
+            {
+                { "add", (Func<int, int, int>)((a, b) => a + b) },
+            });
 
+            var engine = new Engine(builtins);
+            Assert.AreEqual(3, engine.EvaluateCode("add 1 2"));
+
+            engine.ExecuteOrEvaluate("add3 a b c = add (add a b) c");
+            Assert.AreEqual(6, engine.EvaluateCode("add3 1 2 3"));
         }
     }
 }

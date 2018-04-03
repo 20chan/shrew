@@ -6,18 +6,26 @@ namespace shrew
 {
     public class SymbolTable
     {
-        private SymbolTypes _symbols;
+        internal SymbolTypes _symbols;
         private Dictionary<string, Delegate> _variables;
 
-        private SymbolTable _parent;
+        public SymbolTable Parent { get; private set; }
 
-        public SymbolTable(SymbolTable parent = null, Dictionary<string, Delegate> args = null)
+        public SymbolTable(SymbolTable parent = null, Dictionary<string, Delegate> args = null, SymbolTypes preTyped = null)
         {
-            _symbols = new SymbolTypes();
+            _symbols = new SymbolTypes(parent?._symbols);
             _variables = new Dictionary<string, Delegate>();
-            parent = _parent;
+            Parent = parent;
+            if (preTyped != null)
+                SetType(preTyped);
             if (args != null)
                 Setargs(args);
+        }
+
+        private void SetType(SymbolTypes types)
+        {
+            foreach (var t in types)
+                _symbols.Add(t.Key, t.Value);
         }
 
         private void Setargs(Dictionary<string, Delegate> args)
@@ -61,8 +69,8 @@ namespace shrew
         {
             if (_variables.ContainsKey(name))
                 return _variables[name];
-            if (_parent != null)
-                return _parent.Get(name);
+            if (Parent != null)
+                return Parent.Get(name);
             throw new KeyNotFoundException();
         }
     }

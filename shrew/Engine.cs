@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using shrew.Parsing;
 using shrew.Syntax;
 
@@ -8,22 +8,11 @@ namespace shrew
 {
     public class Engine
     {
-        private SymbolTable _table;
-        public StmtsNode RootNode;
+        private SymbolTable _globals;
 
-        private Parser _parser;
-
-        public Engine(string code)
+        public Engine(SymbolTable builtin = null)
         {
-            _parser = new Parser(code);
-            RootNode = _parser.ParseStmts();
-            _table = new SymbolTable();
-        }
-
-        public Engine()
-        {
-            RootNode = null;
-            _table = new SymbolTable();
+            _globals = new SymbolTable(builtin);
         }
 
         /// <summary>
@@ -32,8 +21,8 @@ namespace shrew
         /// <returns>Return value of main procedure</returns>
         public static int Execute(string code)
         {
-            var interpreter = new Engine(code);
-            interpreter.ExecuteAllStmts();
+            var interpreter = new Engine();
+            interpreter.ExecuteCode(code);
             return (int)interpreter.Get("main").DynamicInvoke();
         }
 
@@ -43,46 +32,104 @@ namespace shrew
         /// <returns>Value of expression</returns>
         public static object EvaluateExpr(string code)
         {
-            return new Engine().Evaluate(code);
+            return new Engine().EvaluateCode(code);
         }
 
         public static T EvaluateExpr<T>(string code)
             => (T)EvaluateExpr(code);
 
-        public object Evaluate(string code)
+        public void ExecuteCode(string code)
         {
-            return EvaluateExpr(Parser.Parse(code) as ExprNode);
+            ExecuteAllStmts(Parser.Parse(code, _globals._symbols));
         }
 
-        public void ExecuteAllStmts()
+        public object EvaluateCode(string code)
         {
-            var root = RootNode as StmtsNode;
+            return EvaluateExpr(Parser.Parse(code, _globals._symbols).Nodes[0] as ExprNode, _globals);
+        }
+
+        protected void ExecuteAllStmts(StmtsNode root)
+        {
             foreach (var node in root.Nodes)
-                ExecuteStmt(node);
+                ExecuteStmt(node, _globals);
         }
 
-        protected void ExecuteStmt(SyntaxNode node)
+        protected void ExecuteStmt(SyntaxNode node, SymbolTable env)
         {
             if (node is AssignNode)
             {
-                var assign = node as AssignNode;
-
-                Set(assign.Left[0].Token.Text, (Func<object>)(() => EvaluateExpr(assign.Right)));
+                ExecuteAssign(node as AssignNode, env);
             }
-            else
+            else if (node as ExprNode != null)
             {
-                EvaluateExpr(node as ExprNode);
+                EvaluateExpr(node as ExprNode, env);
             }
+            else throw new Exception($"Unexpected node type {node.GetType()}");
         }
 
-        protected object EvaluateExpr(ExprNode node)
+        protected void ExecuteAssign(AssignNode node, SymbolTable env)
+        {
+            var id = node.Left[0].Token.Text;
+            Delegate function = null;
+            switch (node.Left.Length)
+            {
+                case 1:
+                    function = (Func<object>)(() => EvaluateExpr(node.Right, new SymbolTable(env)));
+                    break;
+                case 2:
+                    {
+                        object func(object arg1)
+                        {
+                            var scoped = new SymbolTable(env, new Dictionary<string, Delegate>
+                            {
+                                { node.Left[1].Token.Text, (Func<object>)(() => arg1) },
+                            });
+                            return EvaluateExpr(node.Right, scoped);
+                        }
+                        function = new Func<object, object>(func);
+                        break;
+                    }
+                case 3:
+                    {
+                        object func(object arg1, object arg2)
+                        {
+                            var scoped = new SymbolTable(env, new Dictionary<string, Delegate>
+                            {
+                                { node.Left[1].Token.Text, (Func<object>)(() => arg1) },
+                                { node.Left[2].Token.Text, (Func<object>)(() => arg2) },
+                            });
+                            return EvaluateExpr(node.Right, scoped);
+                        }
+                        function = new Func<object, object, object>(func);
+                        break;
+                    }
+                case 4:
+                    {
+                        object func(object arg1, object arg2, object arg3)
+                        {
+                            var scoped = new SymbolTable(env, new Dictionary<string, Delegate>
+                            {
+                                { node.Left[1].Token.Text, (Func<object>)(() => arg1) },
+                                { node.Left[2].Token.Text, (Func<object>)(() => arg2) },
+                                { node.Left[3].Token.Text, (Func<object>)(() => arg3) },
+                            });
+                            return EvaluateExpr(node.Right, scoped);
+                        }
+                        function = new Func<object, object, object, object>(func);
+                        break;
+                    }
+            }
+            Set(id, function);
+        }
+
+        protected object EvaluateExpr(ExprNode node, SymbolTable env)
         {
             if (node is BinaryExprNode)
             {
                 var bin = node as BinaryExprNode;
-                dynamic left = EvaluateExpr(bin.Left);
-                dynamic right = EvaluateExpr(bin.Right);
-                switch(bin.Operator.TokenType)
+                dynamic left = EvaluateExpr(bin.Left, env);
+                dynamic right = EvaluateExpr(bin.Right, env);
+                switch (bin.Operator.TokenType)
                 {
                     case SyntaxTokenType.PlusToken:
                         return left + right;
@@ -104,7 +151,15 @@ namespace shrew
             else if (node is IdentifierNode)
             {
                 var id = node as IdentifierNode;
-                return Get(id.Token.Text).DynamicInvoke();
+                return env.Get(id.Token.Text).DynamicInvoke();
+            }
+            else if (node is CallNode)
+            {
+                var call = node as CallNode;
+                return Get(call.Function.Token.Text).DynamicInvoke(
+                    call.Parameters
+                        .Select(n => EvaluateExpr(n, env))
+                        .ToArray());
             }
             else
             {
@@ -114,17 +169,17 @@ namespace shrew
 
         public object ExecuteOrEvaluate(string code)
         {
-            var node = Parser.Parse(code) as StmtsNode;
+            var node = Parser.Parse(code, _globals._symbols) as StmtsNode;
             int i = 0;
             for (; i < node.Nodes.Length - 1; i++)
-                ExecuteStmt(node.Nodes[i]);
+                ExecuteStmt(node.Nodes[i], _globals);
             var expr = node.Nodes[i] as ExprNode;
             if (expr == null)
             {
-                ExecuteStmt(node.Nodes[i]);
+                ExecuteStmt(node.Nodes[i], _globals);
                 return null;
             }
-            return EvaluateExpr(expr);
+            return EvaluateExpr(expr, _globals);
         }
 
         /// <summary>
@@ -136,9 +191,9 @@ namespace shrew
         }
 
         protected Delegate Get(string name)
-            => _table.Get(name);
+            => _globals.Get(name);
 
         protected void Set(string name, Delegate value)
-            => _table.Set(name, value);
+            => _globals.Set(name, value);
     }
 }

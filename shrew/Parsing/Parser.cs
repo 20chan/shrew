@@ -32,11 +32,11 @@ namespace shrew.Parsing
                 Error();
         }
 
-        public Parser(string code, SymbolTypes builtins = null)
+        public Parser(string code, SymbolTypes builtins)
         {
             _code = code;
             _tokens = Lexer.Lex(code).ToArray();
-            _builtins = builtins ?? new SymbolTypes();
+            _builtins = builtins;
             _globals = new SymbolTypes();
         }
 
@@ -45,12 +45,18 @@ namespace shrew.Parsing
             throw new ParserException();
         }
 
-        public static SyntaxNode Parse(string code, SymbolTypes builtins = null)
+        public static StmtsNode Parse(string code, SymbolTypes builtins)
+            => new Parser(code, builtins).ParseStmts();
+
+        public static StmtsNode Parse(string code, SymbolTypes builtins, out SymbolTypes globals)
         {
-            return new Parser(code, builtins).ParseStmts();
+            var parser = new Parser(code, builtins);
+            var res = parser.ParseStmts();
+            globals =  parser._globals;
+            return res;
         }
 
-        internal StmtsNode ParseStmts()
+        protected StmtsNode ParseStmts()
         {
             var nodes = new List<SyntaxNode>();
 

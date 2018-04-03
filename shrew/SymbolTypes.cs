@@ -1,21 +1,29 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 
 namespace shrew
 {
     public class SymbolTypes : IEnumerable<KeyValuePair<string, Type[]>>
     {
+        internal SymbolTypes _parent;
         private Dictionary<string, Type[]> _symbols;
 
-        public SymbolTypes()
+        public SymbolTypes(SymbolTypes parent = null)
         {
             _symbols = new Dictionary<string, Type[]>();
+            _parent = parent;
         }
 
         public bool ContainsKey(string key)
-            => _symbols.ContainsKey(key);
+        {
+            if (_symbols.ContainsKey(key))
+                return true;
+            if (_parent != null)
+                if (_parent.ContainsKey(key))
+                    return true;
+            return false;
+        }
 
         public void Add(string name, params Type[] parameters)
             => _symbols.Add(name, parameters);
@@ -31,6 +39,16 @@ namespace shrew
         }
 
         public Type[] this[string name]
-            => _symbols[name];
+        {
+            get
+            {
+                if (_symbols.ContainsKey(name))
+                    return _symbols[name];
+                if (_parent != null)
+                    return _parent[name];
+                else
+                    throw new KeyNotFoundException();
+            }
+        }
     }
 }
