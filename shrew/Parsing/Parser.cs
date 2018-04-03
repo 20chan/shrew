@@ -9,7 +9,6 @@ namespace shrew.Parsing
     public class Parser
     {
         private readonly string _code;
-        private readonly SymbolTypes _builtins;
         private readonly SymbolTypes _globals;
         private SyntaxToken[] _tokens;
         private int _index;
@@ -36,8 +35,7 @@ namespace shrew.Parsing
         {
             _code = code;
             _tokens = Lexer.Lex(code).ToArray();
-            _builtins = builtins;
-            _globals = new SymbolTypes();
+            _globals = new SymbolTypes(builtins);
         }
 
         protected void Error()
@@ -95,12 +93,12 @@ namespace shrew.Parsing
             if (isExpr)
             {
                 _index = startIndex;
-                return ParseExpr(null);
+                return ParseExpr(_globals);
             }
 
             Eat(SyntaxTokenType.AssignToken);
             var ids = idQueue.ToArray();
-            var localScope = new SymbolTypes();
+            var localScope = new SymbolTypes(_globals);
             foreach (var p in ids.Skip(1))
                 localScope.Add(p.Token.Text);
             var rexpr = ParseExpr(localScope);
@@ -149,10 +147,6 @@ namespace shrew.Parsing
 
             if (local != null && local.ContainsKey(name))
                 pattern = local[name];
-            else if (_globals.ContainsKey(name))
-                pattern = _globals[name];
-            else if (_builtins.ContainsKey(name))
-                pattern = _builtins[name];
             else
                 Error();
 
