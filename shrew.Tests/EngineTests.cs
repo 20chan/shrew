@@ -15,6 +15,7 @@ namespace shrew.Tests
             Assert.AreEqual(0, Execute("main = 0"));
             Assert.AreEqual(2, Execute("main = 1 + 1"));
             Assert.AreEqual(30, Execute("main = 3 * 10"));
+            Assert.AreEqual(100, Execute("a = 10 main = a * 10"));
         }
 
         [TestCategory("Engine"), TestMethod]
@@ -34,8 +35,14 @@ namespace shrew.Tests
 
             engine = new Engine();
             engine.ExecuteCode("a=1");
-
             Assert.AreEqual(3, engine.EvaluateCode("a+2"));
+
+            engine = new Engine(new SymbolTable
+            {
+                { "a", (Func<object>)(() => 10) }
+            });
+            engine.ExecuteCode("b=a*4");
+            Assert.AreEqual(40, engine["b"].DynamicInvoke());
         }
 
         [TestCategory("Engine"), TestMethod]
@@ -84,6 +91,10 @@ namespace shrew.Tests
 
             engine.ExecuteOrEvaluate("add3 a b c = add (add a b) c");
             Assert.AreEqual(6, engine.EvaluateCode("add3 1 2 3"));
+
+            engine = new Engine();
+            Assert.IsNull(engine.ExecuteOrEvaluate("add a b = a + b"));
+            Assert.AreEqual(10, engine.ExecuteOrEvaluate("add 4 6"));
         }
     }
 }
