@@ -23,7 +23,7 @@ namespace shrew
         {
             var interpreter = new Engine();
             interpreter.ExecuteCode(code);
-            return (int)interpreter.Get("main").DynamicInvoke();
+            return (int)interpreter._globals.Get("main").DynamicInvoke();
         }
 
         /// <summary>
@@ -118,9 +118,8 @@ namespace shrew
                         function = new Func<object, object, object, object>(func);
                         break;
                     }
-                    
             }
-            Set(id, function);
+            _globals.Set(id, function);
         }
 
         protected object EvaluateExpr(ExprNode node, SymbolTable env)
@@ -188,13 +187,7 @@ namespace shrew
         /// </summary>
         public Delegate this[string name]
         {
-            get => Get(name);
+            get => _globals.Get(name);
         }
-
-        protected Delegate Get(string name)
-            => _globals.Get(name);
-
-        protected void Set(string name, Delegate value)
-            => _globals.Set(name, value);
     }
 }
