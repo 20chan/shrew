@@ -118,6 +118,7 @@ namespace shrew
                         function = new Func<object, object, object, object>(func);
                         break;
                     }
+                    
             }
             Set(id, function);
         }
@@ -156,7 +157,7 @@ namespace shrew
             else if (node is CallNode)
             {
                 var call = node as CallNode;
-                return Get(call.Function.Token.Text).DynamicInvoke(
+                return env.Get(call.Function.Token.Text).DynamicInvoke(
                     call.Parameters
                         .Select(n => EvaluateExpr(n, env))
                         .ToArray());
