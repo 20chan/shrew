@@ -100,6 +100,30 @@
         }
     }
 
+    public class UnaryExprNode : ExprNode
+    {
+        public ExprNode Right;
+        public SyntaxToken Operator;
+
+        public UnaryExprNode(ExprNode right, SyntaxToken op)
+        {
+            Right = right;
+            Operator = op;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var node = obj as UnaryExprNode;
+            if (node == null)
+                return false;
+            if (!(Right.Equals(node.Right)))
+                return false;
+            if (!(Operator.Equals(node.Operator)))
+                return false;
+            return true;
+        }
+    }
+
     public class BinaryExprNode : ExprNode
     {
         public ExprNode Left, Right;

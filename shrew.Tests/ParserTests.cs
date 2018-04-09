@@ -17,17 +17,31 @@ namespace shrew.Tests
             AssertParse("1", LIT("1", 1));
             AssertParse("true", KEY(TrueKeyword));
             AssertParse("false", KEY(FalseKeyword));
+            AssertParse("\"hello\"", LIT("hello"));
             AssertParse("abcd", new SymbolTypes { "abcd" }, CALL("abcd"));
         }
 
         [TestCategory("Parser"), TestMethod]
         public void TestParseExpression()
         {
+            AssertParse("-1",
+                UN(
+                    LIT("1", 1),
+                    MinusToken));
+
             AssertParse("1+1",
                 BIN(
                     LIT("1", 1),
                     LIT("1", 1),
                 PlusToken));
+
+            AssertParse("1--1",
+                BIN(
+                    LIT("1", 1),
+                    UN(
+                        LIT("1", 1),
+                        MinusToken),
+                    MinusToken));
 
             AssertParse("1+2*3",
                 BIN(
@@ -46,6 +60,41 @@ namespace shrew.Tests
                         PlusToken),
                     LIT("3", 3),
                 AsteriskToken));
+
+            AssertParse("1 | 2 ^ 3 & 4 >> 5 + 6 * -1",
+                BIN(
+                    BIN(
+                        BIN(
+                            BIN(
+                                BIN(
+                                    BIN(
+                                        LIT("1", 1),
+                                        LIT("2", 2),
+                                        VBarToken),
+                                    LIT("3", 3),
+                                    CaretToken),
+                                LIT("4", 4),
+                                AmperToken),
+                            LIT("5", 5),
+                            RShiftToken),
+                        LIT("6", 6),
+                        PlusToken),
+                    UN(
+                        LIT("1", 1),
+                        MinusToken),
+                    AsteriskToken));
+
+            AssertParse("1 == (2 + 1) >= 3",
+                BIN(
+                    LIT("1", 1),
+                    BIN(
+                        BIN(
+                            LIT("2", 2),
+                            LIT("1", 1),
+                            PlusToken),
+                        LIT("3", 3),
+                        GreaterEqualToken),
+                    EqualToken));
         }
 
         [TestCategory("Parser"), TestMethod]
@@ -154,8 +203,14 @@ namespace shrew.Tests
         private static LiteralNode LIT(string text, float value)
             => new LiteralNode(SynFact.Literal(text, value));
 
+        private static LiteralNode LIT(string value)
+            => new LiteralNode(SynFact.Literal(value));
+
         private static LiteralNode KEY(SyntaxTokenType type)
             => new LiteralNode(SynFact.KeywordToken(type));
+
+        private static UnaryExprNode UN(ExprNode right, SyntaxTokenType type)
+            => new UnaryExprNode(right, SynFact.KeywordToken(type));
 
         private static BinaryExprNode BIN(ExprNode left, ExprNode right, SyntaxTokenType type)
             => new BinaryExprNode(left, right, SynFact.KeywordToken(type));
