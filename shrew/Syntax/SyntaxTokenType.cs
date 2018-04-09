@@ -5,18 +5,36 @@
         None = 0,
         IntegerLiteral,
         RealLiteral,
+        StringLiteral,
 
         KnownKeywordStart,
 
-        PlusToken = KnownKeywordStart,
-        MinusToken,
-        AsteriskToken,
-        SlashToken,
-        AssignToken,
-        LParenToken,
-        RParenToken,
-        TrueKeyword,
-        FalseKeyword,
+        PlusToken = KnownKeywordStart, // +
+        MinusToken, // -
+        AsteriskToken, // *
+        SlashToken, // /
+        PercentToken, // %
+        ConcatToken, // ++
+        GreaterToken, // >
+        LessToken, // <
+        GreaterEqualToken, // >=
+        LessEqualToken, // <=
+        EqualToken, // ==
+        NotEqualToken, // !=
+        LShiftToken, // <<
+        RShiftToken, // >>
+        ExclamationToken, // !
+        TildeToken, // ~
+        VBarToken, // |
+        AmperToken, // &
+        DoubleVBarToken, // ||
+        DoubleAmperToken, // &&
+        CaretToken, // ^
+        AssignToken, // =
+        LParenToken, // (
+        RParenToken, // )
+        TrueKeyword, // true
+        FalseKeyword, // false
 
         KnownKeywordEnd = FalseKeyword,
         Identifier,
