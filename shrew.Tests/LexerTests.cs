@@ -18,7 +18,6 @@ namespace shrew.Tests
             AssertLex("012", TokFact.Literal("012", 12));
             AssertLex("0.11", TokFact.Literal("0.11", 0.11f));
             AssertLex("-1", TokFact.Literal("-1", -1));
-            AssertLex("+1", TokFact.Literal("+1", 1));
             AssertLex("--1", TokFact.Literal("--1", 1));
         }
 
