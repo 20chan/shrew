@@ -17,8 +17,6 @@ namespace shrew.Tests
             AssertLex("0", TokFact.Literal("0", 0));
             AssertLex("012", TokFact.Literal("012", 12));
             AssertLex("0.11", TokFact.Literal("0.11", 0.11f));
-            AssertLex("-1", TokFact.Literal("-1", -1));
-            AssertLex("--1", TokFact.Literal("--1", 1));
         }
 
         [TestCategory("Lexer"), TestMethod]
@@ -26,7 +24,7 @@ namespace shrew.Tests
         {
             AssertLex("\"abc\"", TokFact.Literal("abc"));
             AssertLex("\"a  bc  \" ", TokFact.Literal("a  bc  "));
-            AssertLex("\"\\\\\"", TokFact.Literal("\\\""));
+            AssertLex("\"\\\\\"", TokFact.Literal("\\"));
             AssertLex("\"slash\\\"\"", TokFact.Literal("slash\""));
         }
 

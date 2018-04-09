@@ -52,26 +52,29 @@ namespace shrew.Lexing
         {
             if (IsEOF)
                 Error();
-            switch (Pop())
+            switch (Peek)
             {
                 case '+':
-                    return SyntaxFactory.KeywordToken(SyntaxTokenType.PlusToken);
                 case '-':
-                    return SyntaxFactory.KeywordToken(SyntaxTokenType.MinusToken);
                 case '*':
-                    return SyntaxFactory.KeywordToken(SyntaxTokenType.AsteriskToken);
                 case '/':
-                    return SyntaxFactory.KeywordToken(SyntaxTokenType.SlashToken);
+                case '%':
+                case '>':
+                case '<':
                 case '=':
-                    return SyntaxFactory.KeywordToken(SyntaxTokenType.AssignToken);
+                case '!':
+                case '~':
+                case '|':
+                case '&':
+                case '^':
                 case '(':
-                    return SyntaxFactory.KeywordToken(SyntaxTokenType.LParenToken);
                 case ')':
-                    return SyntaxFactory.KeywordToken(SyntaxTokenType.RParenToken);
+                    return LexKeyword();
                 case ' ':
                 case '\t':
                 case '\r':
                 case '\n':
+                    Pop();
                     return Lex();
                 case '0':
                 case '1':
@@ -83,15 +86,100 @@ namespace shrew.Lexing
                 case '7':
                 case '8':
                 case '9':
-                    _index--;
                     return LexNumeric();
+                case '"':
+                    return LexString();
                 default:
-                    _index--;
                     if (char.IsLetterOrDigit(Peek) || Peek == '_')
                         return LexIdentifier();
                     else
                         Error();
                     return null;
+            }
+        }
+
+        private SyntaxToken LexKeyword()
+        {
+            var top = Pop();
+            switch (top)
+            {
+                case '+':
+                    if (!IsEOF && Peek == '+')
+                    {
+                        Pop();
+                        return SyntaxFactory.KeywordToken(SyntaxTokenType.ConcatToken);
+                    }
+                    else return SyntaxFactory.KeywordToken(SyntaxTokenType.PlusToken);
+                case '>':
+                    if (!IsEOF && Peek == '=')
+                    {
+                        Pop();
+                        return SyntaxFactory.KeywordToken(SyntaxTokenType.GreaterEqualToken);
+                    }
+                    else if (!IsEOF && Peek == '>')
+                    {
+                        Pop();
+                        return SyntaxFactory.KeywordToken(SyntaxTokenType.RShiftToken);
+                    }
+                    else return SyntaxFactory.KeywordToken(SyntaxTokenType.GreaterToken);
+                case '<':
+                    if (!IsEOF && Peek == '=')
+                    {
+                        Pop();
+                        return SyntaxFactory.KeywordToken(SyntaxTokenType.LessEqualToken);
+                    }
+                    else if (!IsEOF && Peek == '<')
+                    {
+                        Pop();
+                        return SyntaxFactory.KeywordToken(SyntaxTokenType.LShiftToken);
+                    }
+                    else return SyntaxFactory.KeywordToken(SyntaxTokenType.LessToken);
+                case '|':
+                    if (!IsEOF && Peek == '|')
+                    {
+                        Pop();
+                        return SyntaxFactory.KeywordToken(SyntaxTokenType.DoubleVBarToken);
+                    }
+                    else return SyntaxFactory.KeywordToken(SyntaxTokenType.VBarToken);
+                case '&':
+                    if (!IsEOF && Peek == '&')
+                    {
+                        Pop();
+                        return SyntaxFactory.KeywordToken(SyntaxTokenType.DoubleAmperToken);
+                    }
+                    else return SyntaxFactory.KeywordToken(SyntaxTokenType.AmperToken);
+                case '=':
+                    if (!IsEOF && Peek == '=')
+                    {
+                        Pop();
+                        return SyntaxFactory.KeywordToken(SyntaxTokenType.EqualToken);
+                    }
+                    else return SyntaxFactory.KeywordToken(SyntaxTokenType.AssignToken);
+                case '!':
+                    if (!IsEOF && Peek == '=')
+                    {
+                        Pop();
+                        return SyntaxFactory.KeywordToken(SyntaxTokenType.NotEqualToken);
+                    }
+                    else return SyntaxFactory.KeywordToken(SyntaxTokenType.ExclamationToken);
+                case '-':
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.MinusToken);
+                case '*':
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.AsteriskToken);
+                case '/':
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.SlashToken);
+                case '%':
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.PercentToken);
+                case '~':
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.TildeToken);
+                case '^':
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.CaretToken);
+                case '(':
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.LParenToken);
+                case ')':
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.RParenToken);
+                default:
+                    throw new LexerException();
             }
         }
 
@@ -131,6 +219,40 @@ namespace shrew.Lexing
             // TODO: Span<char> 으로 대체되어야 함.
             var text = _code.Substring(startIdx, len);
             return SyntaxFactory.Literal(text, Convert.ToSingle(text));
+        }
+
+        private SyntaxToken LexString()
+        {
+            Pop();
+            var result = new System.Text.StringBuilder();
+            while (!IsEOF && Peek != '"')
+            {
+                var cur = Pop();
+                if (cur == '\\')
+                {
+                    var unescaped = Pop();
+                    if (unescaped == 'n')
+                        result.Append('\n');
+                    else if (unescaped == 'r')
+                        result.Append('\r');
+                    else if (unescaped == 't')
+                        result.Append('\t');
+                    else if (unescaped == '\\')
+                        result.Append('\\');
+                    else if (unescaped == '"')
+                        result.Append('"');
+                    else if (unescaped == '0')
+                        result.Append('\0');
+                    else
+                        throw new LexerException();
+                }
+                else if (cur == '\r' || cur == '\n')
+                    throw new LexerException();
+                else
+                    result.Append(cur);
+            }
+            Pop();
+            return SyntaxFactory.Literal(result.ToString());
         }
 
         private SyntaxToken LexIdentifier()
