@@ -30,6 +30,40 @@ namespace shrew.Syntax
                     return "*";
                 case SyntaxTokenType.SlashToken:
                     return "/";
+                case SyntaxTokenType.PercentToken:
+                    return "%";
+                case SyntaxTokenType.ConcatToken:
+                    return "++";
+                case SyntaxTokenType.GreaterToken:
+                    return ">";
+                case SyntaxTokenType.LessToken:
+                    return "<";
+                case SyntaxTokenType.GreaterEqualToken:
+                    return ">=";
+                case SyntaxTokenType.LessEqualToken:
+                    return "<=";
+                case SyntaxTokenType.EqualToken:
+                    return "==";
+                case SyntaxTokenType.NotEqualToken:
+                    return "!=";
+                case SyntaxTokenType.LShiftToken:
+                    return "<<";
+                case SyntaxTokenType.RShiftToken:
+                    return ">>";
+                case SyntaxTokenType.ExclamationToken:
+                    return "!";
+                case SyntaxTokenType.TildeToken:
+                    return "~";
+                case SyntaxTokenType.VBarToken:
+                    return "|";
+                case SyntaxTokenType.AmperToken:
+                    return "&";
+                case SyntaxTokenType.DoubleVBarToken:
+                    return "||";
+                case SyntaxTokenType.DoubleAmperToken:
+                    return "&&";
+                case SyntaxTokenType.CaretToken:
+                    return "^";
                 case SyntaxTokenType.AssignToken:
                     return "=";
                 case SyntaxTokenType.LParenToken:
@@ -53,6 +87,9 @@ namespace shrew.Syntax
 
         public static SyntaxToken Literal(string text, float value)
             => SyntaxToken.WithValue(SyntaxTokenType.RealLiteral, text, value);
+
+        public static SyntaxToken Literal(string value)
+            => SyntaxToken.WithValue(SyntaxTokenType.StringLiteral, value, value);
 
         public static SyntaxToken Identifier(string name)
             => SyntaxToken.Identifier(name);
