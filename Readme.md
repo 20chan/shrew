@@ -5,7 +5,7 @@
 
 모든 것이 매크로로 이루어진 엘릭서와 모든 것이 프로시저인 LISP 계열 언어처럼 모든 게 패턴인 언어
 
-## 1차 MVP
+## 1차 목표
 
 파라미터가 없이 단순 대입만 존재.
 
@@ -19,9 +19,9 @@ main = a + b // main return 5
 연산자는 괄호와 사칙연산 (+ - * /) 네 개를 지원하고 자료형은 정수, 실수, 부울 세 가지.
 리터럴은 최소한만 생각함
 
-커밋 [322280526522e7ef5ac79fbfd9c908dafe7b88cf](https://github.com/phillyai/shrew/commit/322280526522e7ef5ac79fbfd9c908dafe7b88cf) 에서 완성
+커밋 [3222805](https://github.com/phillyai/shrew/commit/322280526522e7ef5ac79fbfd9c908dafe7b88cf) 에서 완성
 
-## 2차 MVP
+## 2차 목표
 
 빌트인 함수와 파라미터의 추가. 단 패턴 매칭은 안됨.
 
@@ -29,3 +29,25 @@ main = a + b // main return 5
 add a b = a + b
 main = add (add 1 2) 3
 ```
+
+커밋 [133291e](https://github.com/phillyai/shrew/commit/133291ee904c6899481ead862dadba5b79232b0c) 에서 완성
+
+## 3차 목표
+
+문자열 (연산자 `++`로 concat), 불리언/비트/그 외 연산자 (`> < >= <= == || && << >> | & %`) 추가
+
+## 4차 목표
+
+패턴매칭 추가
+
+```c
+if true trueval _ = trueval
+if false _ falseval = falseval_
+main = if (3 > 1) (print "Bigger")
+```
+
+## 5차 목표
+
+예외 처리 추가
+
+**TODO**
