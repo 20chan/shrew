@@ -163,6 +163,8 @@
         public override bool Equals(object obj)
         {
             var node = obj as TokenNode;
+            if (node == null)
+                return false;
             if (GetType() != node.GetType())
                 return false;
             if (node == null)

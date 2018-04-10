@@ -63,26 +63,26 @@ namespace shrew.Tests
 
             AssertParse("1 | 2 ^ 3 & 4 >> 5 + 6 * -1",
                 BIN(
+                    LIT("1", 1),
                     BIN(
+                        LIT("2", 2),
                         BIN(
+                            LIT("3", 3),
                             BIN(
-                                BIN(
-                                    BIN(
-                                        LIT("1", 1),
-                                        LIT("2", 2),
-                                        VBarToken),
-                                    LIT("3", 3),
-                                    CaretToken),
                                 LIT("4", 4),
-                                AmperToken),
-                            LIT("5", 5),
-                            RShiftToken),
-                        LIT("6", 6),
-                        PlusToken),
-                    UN(
-                        LIT("1", 1),
-                        MinusToken),
-                    AsteriskToken));
+                                BIN(
+                                    LIT("5", 5),
+                                    BIN(
+                                        LIT("6", 6),
+                                        UN(
+                                            LIT("1", 1),
+                                            MinusToken),
+                                        AsteriskToken),
+                                    PlusToken),
+                                RShiftToken),
+                            AmperToken),
+                        CaretToken),
+                    VBarToken));
 
             AssertParse("1 == (2 + 1) >= 3",
                 BIN(
