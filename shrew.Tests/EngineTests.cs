@@ -81,7 +81,7 @@ namespace shrew.Tests
             Assert.AreEqual("ohoh", EvaluateExpr("\"ohoh\""));
             Assert.AreEqual("hello", EvaluateExpr("\"hell\" ++ \"o\""));
             Assert.AreEqual("abcd", EvaluateExpr("\"a\" ++ \"b\" ++ \"c\" ++ \"d\" ++ \"\""));
-            Assert.AreEqual("\\enter\n", EvaluateExpr("\\\\enter\\n"));
+            Assert.AreEqual("\\enter\n", EvaluateExpr("\"\\\\enter\\n\""));
         }
 
         [TestCategory("Engine"), TestMethod]
