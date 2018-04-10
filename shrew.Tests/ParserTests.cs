@@ -35,10 +35,10 @@ namespace shrew.Tests
                         UN(
                             UN(
                                 CALL("a"),
-                                ExclamationToken),
-                            TildeToken),
-                        ExclamationToken),
-                    MinusToken));
+                                MinusToken),
+                            ExclamationToken),
+                        TildeToken),
+                    ExclamationToken));
 
             AssertParse("1+1",
                 BIN(
