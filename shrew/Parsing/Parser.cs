@@ -148,9 +148,18 @@ namespace shrew.Parsing
                 || TopType == ExclamationToken
                 || TopType == TildeToken)
             {
-                var op = Pop();
-                var rexpr = ParseFactor(local);
-                return new UnaryExprNode(rexpr, op);
+                var stack = new Queue<SyntaxToken>();
+
+                while (TopType == MinusToken
+                    || TopType == ExclamationToken
+                    || TopType == TildeToken)
+                    stack.Enqueue(Pop());
+                
+                var expr = ParseFactor(local);
+
+                while (stack.Count > 0)
+                    expr = new UnaryExprNode(expr, stack.Dequeue());
+                return expr;
             }
             return ParseAtom(local, true);
         }

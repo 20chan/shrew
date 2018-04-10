@@ -29,6 +29,17 @@ namespace shrew.Tests
                     LIT("1", 1),
                     MinusToken));
 
+            AssertParse("!~!-a", new SymbolTypes { "a" },
+                UN(
+                    UN(
+                        UN(
+                            UN(
+                                CALL("a"),
+                                ExclamationToken),
+                            TildeToken),
+                        ExclamationToken),
+                    MinusToken));
+
             AssertParse("1+1",
                 BIN(
                     LIT("1", 1),
