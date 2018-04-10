@@ -29,6 +29,13 @@ namespace shrew.Tests
         }
 
         [TestCategory("Lexer"), TestMethod]
+        public void TestWildcardLexing()
+        {
+            AssertLex("_", TokFact.KeywordToken(Typ.WildcardKeyword));
+            AssertLex("__", TokFact.Identifier("__"));
+        }
+
+        [TestCategory("Lexer"), TestMethod]
         public void TestKeywordLexing()
         {
             AssertLex("+", TokFact.KeywordToken(Typ.PlusToken));

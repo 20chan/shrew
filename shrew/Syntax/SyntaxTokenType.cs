@@ -35,6 +35,7 @@
         RParenToken, // )
         TrueKeyword, // true
         FalseKeyword, // false
+        WildcardKeyword, // _
 
         KnownKeywordEnd = FalseKeyword,
         Identifier,
