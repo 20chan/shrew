@@ -74,6 +74,8 @@ namespace shrew.Syntax
                     return "true";
                 case SyntaxTokenType.FalseKeyword:
                     return "false";
+                case SyntaxTokenType.WildcardKeyword:
+                    return "_";
                 default:
                     return string.Empty;
             }

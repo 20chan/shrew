@@ -37,7 +37,7 @@
         FalseKeyword, // false
         WildcardKeyword, // _
 
-        KnownKeywordEnd = FalseKeyword,
+        KnownKeywordEnd = WildcardKeyword,
         Identifier,
         EOF,
     }

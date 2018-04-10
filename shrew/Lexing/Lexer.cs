@@ -271,6 +271,8 @@ namespace shrew.Lexing
                 return SyntaxFactory.KeywordToken(SyntaxTokenType.TrueKeyword);
             else if (text == "false")
                 return SyntaxFactory.KeywordToken(SyntaxTokenType.FalseKeyword);
+            else if (text == "_")
+                return SyntaxFactory.KeywordToken(SyntaxTokenType.WildcardKeyword);
             else
                 return SyntaxFactory.Identifier(text);
         }
