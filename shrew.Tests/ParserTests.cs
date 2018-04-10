@@ -195,6 +195,48 @@ namespace shrew.Tests
                         ID("a"))));
         }
 
+        [TestCategory("Parser"), TestMethod]
+        public void TestParsePattern()
+        {
+            AssertParse("a b = 1",
+                ASGN(
+                    new TokenNode[]
+                    {
+                        ID("a"),
+                        ID("b")
+                    },
+                    LIT("1", 1)));
+
+            AssertParse("a 0 = 1",
+                ASGN(
+                    new TokenNode[]
+                    {
+                        ID("a"),
+                        LIT("0", 0)
+                    },
+                    LIT("1", 1)));
+
+            AssertParse("if true a _ = a if false _ b = b",
+                ASGN(
+                    new TokenNode[]
+                    {
+                        ID("if"),
+                        KEY(TrueKeyword),
+                        ID("a"),
+                        KEY(WildcardKeyword)
+                    },
+                    ID("a")),
+                ASGN(
+                    new TokenNode[]
+                    {
+                        ID("if"),
+                        KEY(FalseKeyword),
+                        KEY(WildcardKeyword),
+                        ID("b")
+                    },
+                    ID("b")));
+        }
+
         private void AssertParse(string code, params SyntaxNode[] nodes)
             => AssertParse(code, null, nodes);
 
@@ -229,7 +271,7 @@ namespace shrew.Tests
         private static AssignNode ASGN(string leftOne, ExprNode right)
             => ASGN(new[] { ID(leftOne) }, right);
 
-        private static AssignNode ASGN(IdentifierNode[] left, ExprNode right)
+        private static AssignNode ASGN(TokenNode[] left, ExprNode right)
             => new AssignNode(left, right);
 
         private static CallNode CALL(string id, params ExprNode[] parameters)

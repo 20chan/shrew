@@ -33,10 +33,10 @@
 
     public class AssignNode : SyntaxNode
     {
-        public readonly IdentifierNode[] Left;
+        public readonly TokenNode[] Left;
         public ExprNode Right;
 
-        public AssignNode(IdentifierNode[] left, ExprNode right)
+        public AssignNode(TokenNode[] left, ExprNode right)
         {
             Left = left;
             Right = right;
