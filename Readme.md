@@ -64,6 +64,8 @@ if false _ falseval = falseval
 main = print (if (3 > 1) "Bigger" "Smaller")
 ```
 
+2차 목표때 해결했어야 할 문젠데 패턴의 파라미터의 타입을 모르니까 일단 파라미터로 받는 모든 값은 파라미터를 받지 않는 값으로 가정함.
+
 ## 5차 목표
 
 예외 처리 추가
