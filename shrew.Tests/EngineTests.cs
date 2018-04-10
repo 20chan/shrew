@@ -53,6 +53,14 @@ namespace shrew.Tests
             Assert.AreEqual(12345, EvaluateExpr("12345"));
             Assert.AreEqual(0, EvaluateExpr("1 - 1"));
             Assert.AreEqual(10, EvaluateExpr("1 + 2 + 3 + 4"));
+            Assert.AreEqual(-1, EvaluateExpr("-1"));
+            Assert.AreEqual(1, EvaluateExpr("----1"));
+            Assert.AreEqual(-2, EvaluateExpr("~1"));
+            Assert.AreEqual(2, EvaluateExpr("-~1"));
+            Assert.AreEqual(0b0001_0101, EvaluateExpr("1 | 4| 16"));
+            Assert.AreEqual(7, EvaluateExpr("1 | 3 ^ 5"));
+            Assert.AreEqual(6, EvaluateExpr("(1 | 3) ^ 5"));
+            Assert.AreEqual(0b0001_0000, EvaluateExpr("1 << 4"));
         }
 
         [TestCategory("Engine"), TestMethod]
@@ -64,6 +72,30 @@ namespace shrew.Tests
             Assert.AreEqual(10f, EvaluateExpr("10.0000"));
             Assert.AreEqual(6f, EvaluateExpr("1 + 2 + 3.0"));
             Assert.AreEqual(0f, EvaluateExpr<float>("0.1 + 0.2 - 0.3"), 0.0001f);
+        }
+
+        [TestCategory("Engine"), TestMethod]
+        public void TestStringExpr()
+        {
+            Assert.AreEqual("", EvaluateExpr("\"\""));
+            Assert.AreEqual("ohoh", EvaluateExpr("\"ohoh\""));
+            Assert.AreEqual("hello", EvaluateExpr("\"hell\" ++ \"o\""));
+            Assert.AreEqual("abcd", EvaluateExpr("\"a\" ++ \"b\" ++ \"c\" ++ \"d\" ++ \"\""));
+            Assert.AreEqual("\\enter\n", EvaluateExpr("\\\\enter\\n"));
+        }
+
+        [TestCategory("Engine"), TestMethod]
+        public void TestBooleanExpr()
+        {
+            Assert.AreEqual(true, EvaluateExpr("true"));
+            Assert.AreEqual(false, EvaluateExpr("false"));
+            Assert.AreEqual(true, EvaluateExpr("!false"));
+            Assert.AreEqual(false, EvaluateExpr("true && false"));
+            Assert.AreEqual(true, EvaluateExpr("10 > 5"));
+            Assert.AreEqual(false, EvaluateExpr("10 <= 5"));
+            Assert.AreEqual(true, EvaluateExpr("1 + 2 == 3"));
+            Assert.AreEqual(true, EvaluateExpr("1 == 2 || true"));
+            Assert.AreEqual(true, EvaluateExpr("37 != 36"));
         }
 
         [TestCategory("Engine"), TestMethod]
