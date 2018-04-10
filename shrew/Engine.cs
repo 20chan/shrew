@@ -124,6 +124,20 @@ namespace shrew
 
         protected object EvaluateExpr(ExprNode node, SymbolTable env)
         {
+            if (node is UnaryExprNode)
+            {
+                var un = node as UnaryExprNode;
+                dynamic right = EvaluateExpr(un.Right, env);
+                switch (un.Operator.TokenType)
+                {
+                    case SyntaxTokenType.ExclamationToken:
+                        return !right;
+                    case SyntaxTokenType.TildeToken:
+                        return ~right;
+                    case SyntaxTokenType.MinusToken:
+                        return -right;
+                }
+            }
             if (node is BinaryExprNode)
             {
                 var bin = node as BinaryExprNode;
@@ -139,6 +153,36 @@ namespace shrew
                         return left * right;
                     case SyntaxTokenType.SlashToken:
                         return left / right;
+                    case SyntaxTokenType.PercentToken:
+                        return left % right;
+                    case SyntaxTokenType.ConcatToken:
+                        return string.Concat(left, right);
+                    case SyntaxTokenType.GreaterToken:
+                        return left > right;
+                    case SyntaxTokenType.GreaterEqualToken:
+                        return left >= right;
+                    case SyntaxTokenType.LessToken:
+                        return left < right;
+                    case SyntaxTokenType.LessEqualToken:
+                        return left <= right;
+                    case SyntaxTokenType.EqualToken:
+                        return left.Equals(right);
+                    case SyntaxTokenType.NotEqualToken:
+                        return !left.Equals(right);
+                    case SyntaxTokenType.LShiftToken:
+                        return left << right;
+                    case SyntaxTokenType.RShiftToken:
+                        return left >> right;
+                    case SyntaxTokenType.AmperToken:
+                        return left & right;
+                    case SyntaxTokenType.CaretToken:
+                        return left ^ right;
+                    case SyntaxTokenType.VBarToken:
+                        return left | right;
+                    case SyntaxTokenType.DoubleAmperToken:
+                        return left && right;
+                    case SyntaxTokenType.DoubleVBarToken:
+                        return left || right;
                     default:
                         throw new Exception();
                 }
