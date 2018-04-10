@@ -52,14 +52,16 @@ main = add (add 1 2) 3
 |10|\|\||Logical OR|L2R|
 |11|=||R2L|
 
+커밋 [215ddda](https://github.com/phillyai/shrew/commit/215dddad79e0ca82898f70932be14c8ba3df2028)에서 완성
+
 ## 4차 목표
 
 패턴매칭 추가
 
 ```c
 if true trueval _ = trueval
-if false _ falseval = falseval_
-main = if (3 > 1) (print "Bigger")
+if false _ falseval = falseval
+main = print (if (3 > 1) "Bigger" "Smaller")
 ```
 
 ## 5차 목표
