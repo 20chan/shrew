@@ -1,5 +1,6 @@
 ﻿namespace shrew.Syntax
 {
+    [System.Diagnostics.DebuggerDisplay("{Text}")]
     public partial class SyntaxToken
     {
         public SyntaxTokenType TokenType { get; }
