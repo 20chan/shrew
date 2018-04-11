@@ -128,5 +128,32 @@ namespace shrew.Tests
             Assert.IsNull(engine.ExecuteOrEvaluate("add a b = a + b"));
             Assert.AreEqual(10, engine.ExecuteOrEvaluate("add 4 6"));
         }
+
+        [TestCategory("Engine"), TestMethod]
+        public void TestPattern()
+        {
+            {
+                var engine = new Engine();
+                engine.ExecuteCode("inc 0 = 1");
+                engine.ExecuteCode("inc 1 = 2");
+                engine.ExecuteCode("inc 2 = 3");
+                Assert.AreEqual("1", engine.EvaluateCode("inc 0"));
+                Assert.AreEqual("3", engine.EvaluateCode("inc 2"));
+                Assert.AreEqual("3", engine.ExecuteOrEvaluate("inc (1+1)"));
+                Assert.AreEqual("2", engine.EvaluateCode("inc (inc 0)"));
+                Assert.AreEqual("3", engine.EvaluateCode("inc (inc (inc 0))"));
+            }
+            {
+                var engine = new Engine();
+                engine.ExecuteCode("if true a _ = a");
+                engine.ExecuteCode("if true _ b = b");
+                Assert.AreEqual("bigger", engine.EvaluateCode("if (2 > 1) \"bigger\" \"smaller or same\""));
+            }
+            {
+                var engine = new Engine();
+                engine.ExecuteCode("if true a _ = a\nif true _ b = b");
+                Assert.AreEqual("bigger", engine.EvaluateCode("if (2 > 1) \"bigger\" \"smaller or same\""));
+            }
+        }
     }
 }
