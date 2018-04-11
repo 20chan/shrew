@@ -225,7 +225,7 @@ namespace shrew.Tests
                         ID("a"),
                         KEY(WildcardKeyword)
                     },
-                    ID("a")),
+                    CALL("a")),
                 ASGN(
                     new TokenNode[]
                     {
@@ -234,7 +234,7 @@ namespace shrew.Tests
                         KEY(WildcardKeyword),
                         ID("b")
                     },
-                    ID("b")));
+                    CALL("b")));
         }
 
         private void AssertParse(string code, params SyntaxNode[] nodes)
