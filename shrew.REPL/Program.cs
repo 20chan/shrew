@@ -6,7 +6,12 @@ namespace shrew.REPL
     {
         static void Main(string[] args)
         {
-            var engine = new Engine();
+            var builtin = new SymbolTable
+            {
+                { "print", (Action<object>)((obj) => Console.WriteLine(obj)) },
+                { "readline", (Func<string>)(() => Console.ReadLine()) },
+            };
+            var engine = new Engine(builtin);
             Console.CancelKeyPress += (s, e) => e.Cancel = true;
             while (true)
             {
