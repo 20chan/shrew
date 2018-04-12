@@ -12,6 +12,8 @@ namespace shrew
 
         public Engine(SymbolTable builtin = null)
         {
+            if (builtin == null) builtin = new SymbolTable();
+            builtin.Add("get", new Func<object, object>((a) => a));
             _globals = new SymbolTable(builtin);
         }
 
@@ -71,10 +73,11 @@ namespace shrew
         {
             var id = node.Left[0].Token.Text;
             Delegate function = null;
+            var processed_right = EvaluateGetOnly(node.Right, env);
             switch (node.Left.Length)
             {
                 case 1:
-                    function = (Func<object>)(() => EvaluateExpr(node.Right, new SymbolTable(env)));
+                    function = (Func<object>)(() => EvaluateExpr(processed_right, new SymbolTable(env)));
                     break;
                 case 2:
                     {
@@ -84,7 +87,7 @@ namespace shrew
                             {
                                 { node.Left[1].Token.Text, (Func<object>)(() => arg1) },
                             });
-                            return EvaluateExpr(node.Right, scoped);
+                            return EvaluateExpr(processed_right, scoped);
                         }
                         function = new Func<object, object>(func);
                         break;
@@ -98,7 +101,7 @@ namespace shrew
                                 { node.Left[1].Token.Text, (Func<object>)(() => arg1) },
                                 { node.Left[2].Token.Text, (Func<object>)(() => arg2) },
                             });
-                            return EvaluateExpr(node.Right, scoped);
+                            return EvaluateExpr(processed_right, scoped);
                         }
                         function = new Func<object, object, object>(func);
                         break;
@@ -113,7 +116,7 @@ namespace shrew
                                 { node.Left[2].Token.Text, (Func<object>)(() => arg2) },
                                 { node.Left[3].Token.Text, (Func<object>)(() => arg3) },
                             });
-                            return EvaluateExpr(node.Right, scoped);
+                            return EvaluateExpr(processed_right, scoped);
                         }
                         function = new Func<object, object, object, object>(func);
                         break;
@@ -122,11 +125,66 @@ namespace shrew
             _globals.Set(id, function);
         }
 
+        private ExprNode EvaluateGetOnly(ExprNode node, SymbolTable env)
+        {
+            if (node is UnaryExprNode un)
+            {
+                return new UnaryExprNode(EvaluateGetOnly(un.Right, env), un.Operator);
+            }
+            if (node is BinaryExprNode bin)
+            {
+                var left = EvaluateGetOnly(bin.Left, env);
+                var right = EvaluateGetOnly(bin.Right, env);
+                return new BinaryExprNode(left, right, bin.Operator);
+            }
+            else if (node is LiteralNode lit)
+            {
+                return lit;
+            }
+            else if (node is IdentifierNode id)
+            {
+                return id;
+            }
+            else if (node is CallNode call)
+            {
+                if (call.Function.Token.Text == "get")
+                {
+                    if (call.Parameters.Length != 1)
+                        throw new Exception("pattern get need 1 parameter");
+                    var val = env.Get(call.Function.Token.Text).DynamicInvoke(
+                        call.Parameters
+                            .Select(n => EvaluateExpr(n, env))
+                            .ToArray());
+
+                    SyntaxToken tok = null;
+
+                    if (val is string st)
+                        tok = SyntaxFactory.Literal(st);
+                    else if (val is int it)
+                        tok = SyntaxFactory.Literal(it.ToString(), it);
+                    else if (val is float fl)
+                        tok = SyntaxFactory.Literal(fl.ToString(), fl);
+                    else
+                        throw new Exception();
+                    return new LiteralNode(tok);
+                }
+                else
+                {
+                    var parameters = call.Parameters.Select(p => EvaluateGetOnly(p, env));
+                    return new CallNode(call.Function, parameters.ToArray());
+                }
+                
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+
         protected object EvaluateExpr(ExprNode node, SymbolTable env)
         {
-            if (node is UnaryExprNode)
+            if (node is UnaryExprNode un)
             {
-                var un = node as UnaryExprNode;
                 dynamic right = EvaluateExpr(un.Right, env);
                 switch (un.Operator.TokenType)
                 {
@@ -138,9 +196,8 @@ namespace shrew
                         return -right;
                 }
             }
-            if (node is BinaryExprNode)
+            if (node is BinaryExprNode bin)
             {
-                var bin = node as BinaryExprNode;
                 dynamic left = EvaluateExpr(bin.Left, env);
                 dynamic right = EvaluateExpr(bin.Right, env);
                 switch (bin.Operator.TokenType)
@@ -187,19 +244,16 @@ namespace shrew
                         throw new Exception();
                 }
             }
-            else if (node is LiteralNode)
+            else if (node is LiteralNode lit)
             {
-                var lit = node as LiteralNode;
                 return lit.Token.Value;
             }
-            else if (node is IdentifierNode)
+            else if (node is IdentifierNode id)
             {
-                var id = node as IdentifierNode;
                 return env.Get(id.Token.Text).DynamicInvoke();
             }
-            else if (node is CallNode)
+            else if (node is CallNode call)
             {
-                var call = node as CallNode;
                 return env.Get(call.Function.Token.Text).DynamicInvoke(
                     call.Parameters
                         .Select(n => EvaluateExpr(n, env))

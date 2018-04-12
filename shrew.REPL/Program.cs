@@ -9,7 +9,7 @@ namespace shrew.REPL
             var builtin = new SymbolTable
             {
                 { "print", (Action<object>)((obj) => Console.WriteLine(obj)) },
-                { "readline", (Func<string>)(() => Console.ReadLine()) },
+                { "readline", (Func<string>)Console.ReadLine },
             };
             var engine = new Engine(builtin);
             Console.CancelKeyPress += (s, e) => e.Cancel = true;
