@@ -68,20 +68,24 @@ namespace shrew.Parsing
 
         protected SyntaxNode Parse()
         {
-            var idQueue = new Queue<IdentifierNode>();
+            var tokQueue = new Queue<TokenNode>();
             var startIndex = _index;
             bool isExpr = false;
 
             if (IsEOF) Error();
             do
             {
-                if (Peek().TokenType != Identifier)
+                if (Peek().TokenType != Identifier
+                    && !Peek().TokenType.IsLiteral())
                 {
                     // AssignToken => it's not expr
                     isExpr = Peek().TokenType != AssignToken;
                     break;
                 }
-                idQueue.Enqueue(new IdentifierNode(Pop()));
+                if (Peek().TokenType == Identifier)
+                    tokQueue.Enqueue(new IdentifierNode(Pop()));
+                else
+                    tokQueue.Enqueue(new LiteralNode(Pop()));
             }
             while (!IsEOF && !isExpr && Peek().TokenType != AssignToken);
 
@@ -99,9 +103,9 @@ namespace shrew.Parsing
             }
 
             Eat(AssignToken);
-            var ids = idQueue.ToArray();
+            var ids = tokQueue.ToArray();
             var localScope = new SymbolTypes(_globals);
-            foreach (var p in ids.Skip(1))
+            foreach (var p in ids.Skip(1).Where(t => t.Token.TokenType == Identifier))
                 localScope.Add(p.Token.Text);
             var rexpr = ParseExpr(localScope);
             // TODO: 타입 추론
