@@ -42,8 +42,9 @@ namespace shrew
             if (ParameterCount == -1)
                 ParameterCount = pattern.Length;
 
-            if (ParameterCount != pattern.Length ||
-                ParameterCount != func.Method.GetParameters().Length)
+            if (ParameterCount != pattern.Length)
+                throw new Exception("Parameters count doesn't match");
+            if (func != null && ParameterCount != func.Method.GetParameters().Length)
                 throw new Exception("Parameters count doesn't match");
 
             for (int i = 0; i < _patterns.Count; i++)

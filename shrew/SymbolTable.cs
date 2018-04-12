@@ -15,19 +15,20 @@ namespace shrew
             Dictionary<string, Delegate> args = null,
             Dictionary<string, object[]> pattern = null)
         {
+            Parent = parent;
             _patterns = new List<Pattern>();
-            foreach (var p in pattern)
-            {
-                Add(p.Key, p.Value);
-            }
-            foreach (var p in args)
-            {
-                Add(p.Key, p.Value);
-            }
+            if (pattern != null)
+                foreach (var p in pattern)
+                    Add(p.Key, p.Value);
+            if (args != null)
+                foreach (var p in args)
+                    Add(p.Key, p.Value);
         }
 
         public void Add(string name, Delegate func)
         {
+            if (func == null)
+                func = (Action)(() => { });
             if (ContainsKeyHere(name))
                 GetHere(name).Add(func);
             else
