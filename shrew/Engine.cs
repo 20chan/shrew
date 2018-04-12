@@ -25,7 +25,8 @@ namespace shrew
         {
             var interpreter = new Engine();
             interpreter.ExecuteCode(code);
-            return (int)interpreter._globals.Get("main").DynamicInvoke();
+            throw new NotImplementedException();
+            //return (int)interpreter._globals.Get("main").DynamicInvoke();
         }
 
         /// <summary>
@@ -42,12 +43,12 @@ namespace shrew
 
         public void ExecuteCode(string code)
         {
-            ExecuteAllStmts(Parser.Parse(code, _globals._symbols));
+            ExecuteAllStmts(Parser.Parse(code, _globals));
         }
 
         public object EvaluateCode(string code)
         {
-            return EvaluateExpr(Parser.Parse(code, _globals._symbols).Nodes[0] as ExprNode, _globals);
+            return EvaluateExpr(Parser.Parse(code, _globals).Nodes[0] as ExprNode, _globals);
         }
 
         protected void ExecuteAllStmts(StmtsNode root)
@@ -122,7 +123,7 @@ namespace shrew
                         break;
                     }
             }
-            _globals.Set(id, function);
+            _globals.Add(id, function);
         }
 
         private ExprNode EvaluateGetOnly(ExprNode node, SymbolTable env)
@@ -267,7 +268,7 @@ namespace shrew
 
         public object ExecuteOrEvaluate(string code)
         {
-            var node = Parser.Parse(code, _globals._symbols) as StmtsNode;
+            var node = Parser.Parse(code, _globals) as StmtsNode;
             int i = 0;
             for (; i < node.Nodes.Length - 1; i++)
                 ExecuteStmt(node.Nodes[i], _globals);
@@ -283,7 +284,7 @@ namespace shrew
         /// <summary>
         /// Get procedure by its name
         /// </summary>
-        public Delegate this[string name]
+        public Pattern this[string name]
         {
             get => _globals.Get(name);
         }

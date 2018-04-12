@@ -78,12 +78,17 @@ namespace shrew
             return null;
         }
 
+        public object DynamicInvoke(params object[] parameters)
+        {
+            return GetMatchedFunc(parameters, out var _).DynamicInvoke(parameters);
+        }
+
         private Type[] GetTypes(Delegate func)
         {
             return func.Method.GetParameters().Select(p => p.ParameterType).ToArray();
         }
 
-        private bool IsTypeMatching(object[] pattern, object[] parameters)
+        private static bool IsTypeMatching(object[] pattern, object[] parameters)
         {
             if (pattern.Length != parameters.Length)
                 return false;
@@ -118,7 +123,7 @@ namespace shrew
             return true;
         }
 
-        private bool IsMatchingOne<T>(T expected, object actual)
+        private static bool IsMatchingOne<T>(T expected, object actual)
         {
             if (!actual.GetType().IsAssignableFrom(typeof(T)))
                 return false;

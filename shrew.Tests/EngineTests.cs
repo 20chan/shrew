@@ -37,10 +37,10 @@ namespace shrew.Tests
             engine.ExecuteCode("a=1");
             Assert.AreEqual(3, engine.EvaluateCode("a+2"));
 
-            engine = new Engine(new SymbolTable
+            engine = new Engine(new SymbolTable(args: new Dictionary<string, Delegate>()
             {
                 { "a", (Func<object>)(() => 10) }
-            });
+            }));
             engine.ExecuteCode("b=a*4");
             Assert.AreEqual(40, engine["b"].DynamicInvoke());
         }
