@@ -63,20 +63,18 @@ if true trueval _ = trueval
 if false _ falseval = falseval
 main = print (if (3 > 1) "Bigger" "Smaller")
 ```
-
-2차 목표때 해결했어야 할 문젠데 패턴의 파라미터의 타입을 모르니까 **일단 파라미터로 받는 모든 값은 파라미터를 받지 않는 타입으로 가정함**.
-
-예를 들어
+```c
+>>> sum_iter 0 res = res
+>>> sum_iter n res = sum_iter (n-1) (res+n)
+>>> sum n = sum_iter n 0
+>>> sum 100
+5050
 ```
-foo a = a
-bar b = b
-```
-같은 코드는 `a`의 타입을 알 수 없어 `foo a = a bar; b = b` 가 될지 `foo a = a; bar b = b`가 될지 알 수 없다
 
-패턴의 정의 코드를 (하스켈처럼 `foo :: ((() -> obj) a) => a -> a`) 추가하거나 아니면
-모호할 수 있는 부분은 경고를 주어 강력하게 명시하도록 하자 (`foo a = (a) bar b = b`로 변경하시오 ..?)
+2차 목표때 해결했어야 할 문젠데 패턴의 파라미터의 타입을 모르니까 **일단 파라미터로 받는 모든 값은 파라미터를 받지 않는 타입으로 가정함**. (이슈 [#2](https://github.com/phillyai/shrew/issues/3) 참고)
 
-아니면 가장 싫고 피하고 싶은 방법이지만 문장의 끝을 명시하는 거겠지 그게 새 줄이 됐던 세미콜론같은게 됐던
+
+ 커밋 [36759ec](https://github.com/phillyai/shrew/commit/36759ec2c6ed8000136a83bc62d40890963e0a72)에서 완성
 
 ## 5차 목표
 
