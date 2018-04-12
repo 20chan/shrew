@@ -5,90 +5,67 @@ using System.Linq;
 
 namespace shrew
 {
-    public class SymbolTable : IEnumerable<KeyValuePair<string, Delegate>>
+    public class SymbolTable
     {
-        internal SymbolTypes _symbols;
-        private Dictionary<string, Delegate> _variables;
+        private List<Pattern> _patterns;
 
         public SymbolTable Parent { get; private set; }
 
-        public SymbolTable(SymbolTable parent = null, Dictionary<string, Delegate> args = null, SymbolTypes preTyped = null)
+        public SymbolTable(SymbolTable parent = null,
+            Dictionary<string, Delegate> args = null,
+            Dictionary<string, object[]> pattern = null)
         {
-            _symbols = new SymbolTypes(parent?._symbols);
-            _variables = new Dictionary<string, Delegate>();
-            Parent = parent;
-            if (preTyped != null)
-                SetType(preTyped);
-            if (args != null)
-                Setargs(args);
-        }
-
-        private void SetType(SymbolTypes types)
-        {
-            foreach (var t in types)
-                _symbols.Add(t.Key, t.Value);
-        }
-
-        private void Setargs(Dictionary<string, Delegate> args)
-        {
-            foreach (var arg in args)
+            _patterns = new List<Pattern>();
+            foreach (var p in pattern)
             {
-                Set(arg.Key, arg.Value);
+                Add(p.Key, p.Value);
+            }
+            foreach (var p in args)
+            {
+                Add(p.Key, p.Value);
             }
         }
 
-        public void Add(string name, Delegate value)
+        public void Add(string name, Delegate func)
         {
-            _symbols.Add(name, value.Method.GetParameters().Select(p => p.ParameterType).ToArray());
-            _variables.Add(name, value);
+            if (ContainsKeyHere(name))
+                GetHere(name).Add(func);
+            else
+                _patterns.Add(new Pattern(name, func));
         }
 
-        public void Set(string name, Delegate value)
+        public void Add(string name, object[] pattern, Delegate func = null)
         {
-            var paramTypes = value.Method.GetParameters().Select(p => p.ParameterType).ToArray();
-            if (_symbols.ContainsKey(name))
-            {
-                var types = _symbols[name];
-                if (types.Length != paramTypes.Length)
-                    throw new Exception("파라미터 개수가 안맞음");
-                bool something_bad = false;
-                int i = 0;
-                for (; i < types.Length; i++)
-                    if (!types[i].Equals(paramTypes[i]))
-                    {
-                        something_bad = true;
-                        break;
-                    }
-
-                if (something_bad)
-                    throw new Exception($"{i}번째 파라미터 타입이 안맞음");
-            }
+            if (ContainsKeyHere(name))
+                GetHere(name).Add(pattern, func);
             else
-                _symbols.Add(name, paramTypes);
-
-            if (_variables.ContainsKey(name))
-                _variables[name] = value;
-            else
-                _variables.Add(name, value);
+                _patterns.Add(new Pattern(name, Tuple.Create(pattern, func)));
         }
 
-        public Delegate Get(string name)
+        private bool ContainsKeyHere(string name)
+            => _patterns.Any(p => p.Name == name);
+
+        public bool ContainsKey(string name)
         {
-            if (_variables.ContainsKey(name))
-                return _variables[name];
-            if (Parent != null)
+            if (ContainsKeyHere(name))
+                return true;
+            else if (Parent != null)
+                return Parent.ContainsKey(name);
+            else
+                return false;
+        }
+
+        private Pattern GetHere(string name)
+            => _patterns.FirstOrDefault(p => p.Name == name);
+
+        public Pattern Get(string name)
+        {
+            if (ContainsKeyHere(name))
+                return GetHere(name);
+            else if (Parent != null)
                 return Parent.Get(name);
-            throw new KeyNotFoundException();
-        }
-
-        public IEnumerator<KeyValuePair<string, Delegate>> GetEnumerator()
-        {
-            return ((IEnumerable<KeyValuePair<string, Delegate>>)_variables).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable<KeyValuePair<string, Delegate>>)_variables).GetEnumerator();
+            else
+                return null;
         }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using shrew.Parsing;
 using shrew.Syntax;
 
 using static shrew.Syntax.SyntaxTokenType;
 using SynFact = shrew.Syntax.SyntaxFactory;
+using dic = System.Collections.Generic.Dictionary<string, System.Delegate>;
 
 namespace shrew.Tests
 {
@@ -18,7 +20,7 @@ namespace shrew.Tests
             AssertParse("true", KEY(TrueKeyword));
             AssertParse("false", KEY(FalseKeyword));
             AssertParse("\"hello\"", LIT("hello"));
-            AssertParse("abcd", new SymbolTypes { "abcd" }, CALL("abcd"));
+            AssertParse("abcd", new dic { { "abcd", null } }, CALL("abcd"));
         }
 
         [TestCategory("Parser"), TestMethod]
@@ -29,7 +31,7 @@ namespace shrew.Tests
                     LIT("1", 1),
                     MinusToken));
 
-            AssertParse("!~!-a", new SymbolTypes { "a" },
+            AssertParse("!~!-a", new dic { { "a", null } },
                 UN(
                     UN(
                         UN(
@@ -116,7 +118,7 @@ namespace shrew.Tests
                     "a",
                     LIT("1", 1)));
 
-            AssertParse("abcd = b * 1.5", new SymbolTypes { "b" },
+            AssertParse("abcd = b * 1.5", new dic { { "b", null } },
                 ASGN(
                     "abcd",
                     BIN(
@@ -149,11 +151,11 @@ namespace shrew.Tests
         [TestCategory("Parser"), TestMethod]
         public void TestCallParams()
         {
-            var builtins = new SymbolTypes
+            var builtins = new dic
             {
-                { "add",  typeof(int), typeof(int) },
-                { "a" },
-                { "b" },
+                { "add",  new Func<int, int, int>((a, b) => a + b) },
+                { "a", null },
+                { "b", null },
             };
 
             AssertParse("add 1 2", builtins,
@@ -263,9 +265,10 @@ namespace shrew.Tests
         private void AssertParse(string code, params SyntaxNode[] nodes)
             => AssertParse(code, null, nodes);
 
-        private void AssertParse(string code, SymbolTypes builtins, params SyntaxNode[] nodes)
+        private void AssertParse(string code, Dictionary<string, Delegate> builtins, params SyntaxNode[] nodes)
         {
-            var actual = Parser.Parse(code, builtins);
+            var table = new SymbolTable(args: builtins);
+            var actual = Parser.Parse(code, table);
             new StmtsNode(nodes).Equals(actual);
             Assert.AreEqual(actual, new StmtsNode(nodes));
         }

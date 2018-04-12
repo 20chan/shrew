@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace shrew.REPL
 {
@@ -6,11 +7,11 @@ namespace shrew.REPL
     {
         static void Main(string[] args)
         {
-            var builtin = new SymbolTable
+            var builtin = new SymbolTable(args: new Dictionary<string, Delegate>()
             {
                 { "print", (Action<object>)((obj) => Console.WriteLine(obj)) },
                 { "readline", (Func<string>)Console.ReadLine },
-            };
+            });
             var engine = new Engine(builtin);
             Console.CancelKeyPress += (s, e) => e.Cancel = true;
             while (true)

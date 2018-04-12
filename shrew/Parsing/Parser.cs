@@ -11,7 +11,7 @@ namespace shrew.Parsing
     public class Parser
     {
         private readonly string _code;
-        private readonly SymbolTypes _globals;
+        private readonly SymbolTable _globals;
         private SyntaxToken[] _tokens;
         private int _index;
 
@@ -33,11 +33,11 @@ namespace shrew.Parsing
                 Error();
         }
 
-        public Parser(string code, SymbolTypes builtins)
+        public Parser(string code, SymbolTable builtins)
         {
             _code = code;
             _tokens = Lexer.Lex(code).ToArray();
-            _globals = new SymbolTypes(builtins);
+            _globals = new SymbolTable(builtins);
         }
 
         protected void Error()
@@ -45,10 +45,10 @@ namespace shrew.Parsing
             throw new ParserException();
         }
 
-        public static StmtsNode Parse(string code, SymbolTypes builtins)
+        public static StmtsNode Parse(string code, SymbolTable builtins)
             => new Parser(code, builtins).ParseStmts();
 
-        public static StmtsNode Parse(string code, SymbolTypes builtins, out SymbolTypes globals)
+        public static StmtsNode Parse(string code, SymbolTable builtins, out SymbolTable globals)
         {
             var parser = new Parser(code, builtins);
             var res = parser.ParseStmts();
@@ -104,49 +104,49 @@ namespace shrew.Parsing
 
             Eat(AssignToken);
             var ids = tokQueue.ToArray();
-            var localScope = new SymbolTypes(_globals);
+            var localScope = new SymbolTable(_globals);
             foreach (var p in ids.Skip(1).Where(t => t.Token.TokenType == Identifier))
-                localScope.Add(p.Token.Text);
+                localScope.Add(p.Token.Text, new object[] { });
             var rexpr = ParseExpr(localScope);
             // TODO: 타입 추론
             _globals.Add(ids[0].Token.Text, Enumerable.Repeat<Type>(null, ids.Length - 1).ToArray());
             return new AssignNode(ids, rexpr);
         }
 
-        protected ExprNode ParseExpr(SymbolTypes local)
+        protected ExprNode ParseExpr(SymbolTable local)
         {
             return ParseDoubleOr(local);
         }
 
-        protected ExprNode ParseDoubleOr(SymbolTypes local)
+        protected ExprNode ParseDoubleOr(SymbolTable local)
             => ParseBinary(local, ParseDoubleAnd, DoubleVBarToken);
 
-        protected ExprNode ParseDoubleAnd(SymbolTypes local)
+        protected ExprNode ParseDoubleAnd(SymbolTable local)
             => ParseBinary(local, ParseOr, DoubleAmperToken);
 
-        protected ExprNode ParseOr(SymbolTypes local)
+        protected ExprNode ParseOr(SymbolTable local)
             => ParseBinary(local, ParseXor, VBarToken);
 
-        protected ExprNode ParseXor(SymbolTypes local)
+        protected ExprNode ParseXor(SymbolTable local)
             => ParseBinary(local, ParseAnd, CaretToken);
 
-        protected ExprNode ParseAnd(SymbolTypes local)
+        protected ExprNode ParseAnd(SymbolTable local)
             => ParseBinary(local, ParseCompare, AmperToken);
 
-        protected ExprNode ParseCompare(SymbolTypes local)
+        protected ExprNode ParseCompare(SymbolTable local)
             => ParseBinary(local, ParseShift,
                 GreaterToken, LessToken, GreaterEqualToken, LessEqualToken, EqualToken, NotEqualToken);
 
-        protected ExprNode ParseShift(SymbolTypes local)
+        protected ExprNode ParseShift(SymbolTable local)
             => ParseBinary(local, ParseArith, LShiftToken, RShiftToken);
 
-        protected ExprNode ParseArith(SymbolTypes local)
+        protected ExprNode ParseArith(SymbolTable local)
             => ParseBinary(local, ParseTerm, PlusToken, MinusToken, ConcatToken);
 
-        protected ExprNode ParseTerm(SymbolTypes local)
+        protected ExprNode ParseTerm(SymbolTable local)
             => ParseBinary(local, ParseFactor, AsteriskToken, SlashToken, PercentToken);
 
-        protected ExprNode ParseFactor(SymbolTypes local)
+        protected ExprNode ParseFactor(SymbolTable local)
         {
             if (TopType == MinusToken
                 || TopType == ExclamationToken
@@ -159,7 +159,7 @@ namespace shrew.Parsing
             return ParseAtom(local, true);
         }
 
-        protected ExprNode ParseAtom(SymbolTypes local, bool callAllowed)
+        protected ExprNode ParseAtom(SymbolTable local, bool callAllowed)
         {
             if (TopType == LParenToken)
             {
@@ -185,19 +185,19 @@ namespace shrew.Parsing
             return null;
         }
 
-        protected CallNode ParseCall(SymbolTypes local)
+        protected CallNode ParseCall(SymbolTable local)
         {
             var id = new IdentifierNode(Pop());
             var name = id.Token.Text;
-            Type[] pattern = null;
+            int patterncount = -1;
             var paramsQueue = new Queue<ExprNode>();
 
             if (local != null && local.ContainsKey(name))
-                pattern = local[name];
+                patterncount = local.Get(name).ParameterCount;
             else
                 Error();
 
-            for (int i = 0; i < pattern.Length; i++)
+            for (int i = 0; i < patterncount; i++)
             {
                 var p = ParseAtom(local, false);
                 // TODO: Type check
@@ -207,8 +207,8 @@ namespace shrew.Parsing
             return new CallNode(id, paramsQueue.ToArray());
         }
 
-        private ExprNode ParseBinary(SymbolTypes local,
-            Func<SymbolTypes, ExprNode> lexpr_func,
+        private ExprNode ParseBinary(SymbolTable local,
+            Func<SymbolTable, ExprNode> lexpr_func,
             params SyntaxTokenType[] types)
         {
             var lexpr = lexpr_func(local);
