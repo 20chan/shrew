@@ -25,8 +25,7 @@ namespace shrew
         {
             var interpreter = new Engine();
             interpreter.ExecuteCode(code);
-            throw new NotImplementedException();
-            //return (int)interpreter._globals.Get("main").DynamicInvoke();
+            return (int)interpreter._globals.Get("main").DynamicInvoke();
         }
 
         /// <summary>
