@@ -1,4 +1,5 @@
-﻿using System;
+﻿using shrew.Syntax;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -113,9 +114,14 @@ namespace shrew
                     if (!IsMatchingOne(f, par))
                         return false;
                 }
+                else if (pat is bool b)
+                {
+                    if (!IsMatchingOne(b, par))
+                        return false;
+                }
                 else if (pat is Type t)
                 {
-                    if (!par.GetType().IsAssignableFrom(t))
+                    if (!t.IsAssignableFrom(par.GetType()))
                         return false;
                 }
                 else
@@ -131,6 +137,21 @@ namespace shrew
             if (!actual.Equals(expected))
                 return false;
             return true;
+        }
+
+        internal static object[] GuessTypes(IEnumerable<TokenNode> parameters)
+        {
+            return parameters.Select(t =>
+             {
+                 if (t.Token.TokenType == SyntaxTokenType.Identifier)
+                     return typeof(object);
+                 else if (t.Token.TokenType == SyntaxTokenType.WildcardKeyword)
+                     return typeof(object);
+                 else if (t.Token.TokenType.IsLiteral())
+                     return t.Token.Value;
+                 else
+                     throw new Exception();
+             }).ToArray();
         }
     }
 }

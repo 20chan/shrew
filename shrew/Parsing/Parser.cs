@@ -109,7 +109,8 @@ namespace shrew.Parsing
                 localScope.Add(p.Token.Text, new object[] { });
             var rexpr = ParseExpr(localScope);
             // TODO: 타입 추론
-            _globals.Add(ids[0].Token.Text, Enumerable.Repeat<Type>(null, ids.Length - 1).ToArray());
+            var pattern = Pattern.GuessTypes(ids.Skip(1));
+            _globals.Add(ids[0].Token.Text, pattern);
             return new AssignNode(ids, rexpr);
         }
 

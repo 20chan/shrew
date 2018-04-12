@@ -122,7 +122,10 @@ namespace shrew
                         break;
                     }
             }
-            _globals.Add(id, function);
+
+            var pattern = Pattern.GuessTypes(node.Left.Skip(1));
+
+            _globals.Add(id, pattern, function);
         }
 
         private ExprNode EvaluateGetOnly(ExprNode node, SymbolTable env)
