@@ -235,6 +235,29 @@ namespace shrew.Tests
                         ID("b")
                     },
                     CALL("b")));
+
+            AssertParse("times a 1 true = a times a 2 true = a + a",
+                ASGN(
+                    new TokenNode[]
+                    {
+                        ID("times"),
+                        ID("a"),
+                        LIT("1", 1),
+                        KEY(TrueKeyword)
+                    },
+                    CALL("a")),
+                ASGN(
+                    new TokenNode[]
+                    {
+                        ID("times"),
+                        ID("a"),
+                        LIT("2", 2),
+                        KEY(TrueKeyword)
+                    },
+                    BIN(
+                        CALL("a"),
+                        CALL("a"),
+                        PlusToken)));
         }
 
         private void AssertParse(string code, params SyntaxNode[] nodes)
