@@ -9,7 +9,7 @@ namespace shrew
     {
         public string Name { get; private set; }
         private List<object[]> _patterns;
-        private List<Delegate> _functions;
+        private List<Function> _functions;
         public List<bool> _initialized;
 
         public int ParameterCount;
@@ -18,7 +18,7 @@ namespace shrew
         {
             Name = name;
             _patterns = new List<object[]>();
-            _functions = new List<Delegate>();
+            _functions = new List<Function>();
             _initialized = new List<bool>();
             ParameterCount = paramCount;
         }
@@ -68,7 +68,7 @@ namespace shrew
             _functions.Add(func);
         }
         
-        public Delegate GetMatchedFunc(object[] parameters, out bool notfound)
+        private Function GetMatchedFunc(object[] parameters, out bool notfound)
         {
             notfound = false;
             for (int i = 0; i < _patterns.Count; i++)
@@ -82,7 +82,7 @@ namespace shrew
 
         public object DynamicInvoke(params object[] parameters)
         {
-            return GetMatchedFunc(parameters, out var _).DynamicInvoke(parameters);
+            return GetMatchedFunc(parameters, out var _).Invoke(parameters);
         }
 
         private Type[] GetTypes(Delegate func)

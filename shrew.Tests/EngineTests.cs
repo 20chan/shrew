@@ -115,7 +115,7 @@ namespace shrew.Tests
         {
             var builtins = new SymbolTable(args: new Dictionary<string, Delegate>()
             {
-                { "add", (Func<int, int, int>)((a, b) => a + b) },
+                { "add", (Func<object, object, object>)((a, b) => (int)a + (int)b) },
             });
 
             var engine = new Engine(builtins);
