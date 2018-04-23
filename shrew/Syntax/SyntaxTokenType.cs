@@ -36,9 +36,9 @@
         TrueKeyword, // true
         FalseKeyword, // false
         WildcardKeyword, // _
-
-        KnownKeywordEnd = WildcardKeyword,
-        Identifier,
+        NewLine, // \n
         EOF,
+        KnownKeywordEnd = EOF,
+        Identifier,
     }
 }

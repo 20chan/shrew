@@ -130,7 +130,7 @@ namespace shrew.Tests
         [TestCategory("Parser"), TestMethod]
         public void TestParseStatements()
         {
-            AssertParse("a = 1 b = 2",
+            AssertParse("a = 1\nb = 2",
                 ASGN(
                     "a",
                     LIT("1", 1)),
@@ -138,7 +138,7 @@ namespace shrew.Tests
                     "b",
                     LIT("2", 2)));
 
-            AssertParse("a = 1 1 + 2",
+            AssertParse("a = 1\n1 + 2",
                 ASGN(
                     "a",
                     LIT("1", 1)),
@@ -218,7 +218,7 @@ namespace shrew.Tests
                     },
                     LIT("1", 1)));
 
-            AssertParse("if true a _ = a if false _ b = b",
+            AssertParse("if true a _ = a\nif false _ b = b",
                 ASGN(
                     new TokenNode[]
                     {
@@ -238,7 +238,7 @@ namespace shrew.Tests
                     },
                     CALL("b")));
 
-            AssertParse("times a 1 true = a times a 2 true = a + a",
+            AssertParse("times a 1 true = a\ntimes a 2 true = a + a",
                 ASGN(
                     new TokenNode[]
                     {

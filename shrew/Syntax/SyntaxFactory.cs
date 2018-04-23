@@ -76,6 +76,10 @@ namespace shrew.Syntax
                     return "false";
                 case SyntaxTokenType.WildcardKeyword:
                     return "_";
+                case SyntaxTokenType.NewLine:
+                    return "\n";
+                case SyntaxTokenType.EOF:
+                    return "\0";
                 default:
                     return string.Empty;
             }

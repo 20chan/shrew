@@ -15,7 +15,7 @@ namespace shrew.Tests
             Assert.AreEqual(0, Execute("main = 0"));
             Assert.AreEqual(2, Execute("main = 1 + 1"));
             Assert.AreEqual(30, Execute("main = 3 * 10"));
-            Assert.AreEqual(100, Execute("a = 10 main = a * 10"));
+            Assert.AreEqual(100, Execute("a = 10\nmain = a * 10"));
         }
 
         [TestCategory("Engine"), TestMethod]
