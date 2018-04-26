@@ -11,12 +11,11 @@ namespace shrew.Parsing
     public class Parser
     {
         private readonly string _code;
-        private readonly SymbolTable _globals;
         private SyntaxToken[] _tokens;
         private int _index;
 
         private bool IsEOF
-            => _index == _tokens.Length;
+            => _index == _tokens.Length || IsNewLineOnlyLeft();
 
         private SyntaxToken Peek(int n = 0)
             => _tokens[_index + n];
@@ -27,17 +26,26 @@ namespace shrew.Parsing
         private SyntaxToken Pop()
             => _tokens[_index++];
 
+        private bool IsNewLineOnlyLeft()
+        {
+            for (int i = _index; i < _tokens.Length; i++)
+            {
+                if (_tokens[i].TokenType != NewLine)
+                    return false;
+            }
+            return true;
+        }
+
         private void Eat(SyntaxTokenType tok)
         {
             if (Pop().TokenType != tok)
                 Error();
         }
 
-        public Parser(string code, SymbolTable builtins)
+        public Parser(string code)
         {
             _code = code;
             _tokens = Lexer.Lex(code).ToArray();
-            _globals = new SymbolTable(builtins);
         }
 
         protected void Error()
@@ -45,17 +53,9 @@ namespace shrew.Parsing
             throw new ParserException();
         }
 
-        public static StmtsNode Parse(string code, SymbolTable builtins)
-            => new Parser(code, builtins).ParseStmts();
-
-        public static StmtsNode Parse(string code, SymbolTable builtins, out SymbolTable globals)
-        {
-            var parser = new Parser(code, builtins);
-            var res = parser.ParseStmts();
-            globals =  parser._globals;
-            return res;
-        }
-
+        public static StmtsNode Parse(string code)
+            => new Parser(code).ParseStmts();
+        
         protected StmtsNode ParseStmts()
         {
             var nodes = new List<SyntaxNode>();
@@ -68,6 +68,11 @@ namespace shrew.Parsing
 
         protected SyntaxNode Parse()
         {
+            if (Peek().TokenType == NewLine)
+            {
+                Pop();
+                return Parse();
+            }
             var tokQueue = new Queue<TokenNode>();
             var startIndex = _index;
             bool isExpr = false;
@@ -99,73 +104,67 @@ namespace shrew.Parsing
             if (isExpr)
             {
                 _index = startIndex;
-                return ParseExpr(_globals);
+                return ParseExpr();
             }
 
             Eat(AssignToken);
             var ids = tokQueue.ToArray();
-            var localScope = new SymbolTable(_globals);
-            foreach (var p in ids.Skip(1).Where(t => t.Token.TokenType == Identifier))
-                localScope.Add(p.Token.Text, new object[] { });
-            var rexpr = ParseExpr(localScope);
-            // TODO: 타입 추론
-            var pattern = Pattern.GuessTypes(ids.Skip(1));
-            _globals.Add(ids[0].Token.Text, pattern);
+            var rexpr = ParseExpr();
             return new AssignNode(ids, rexpr);
         }
 
-        protected ExprNode ParseExpr(SymbolTable local)
+        protected ExprNode ParseExpr()
         {
-            return ParseDoubleOr(local);
+            return ParseDoubleOr();
         }
 
-        protected ExprNode ParseDoubleOr(SymbolTable local)
-            => ParseBinary(local, ParseDoubleAnd, DoubleVBarToken);
+        protected ExprNode ParseDoubleOr()
+            => ParseBinary(ParseDoubleAnd, DoubleVBarToken);
 
-        protected ExprNode ParseDoubleAnd(SymbolTable local)
-            => ParseBinary(local, ParseOr, DoubleAmperToken);
+        protected ExprNode ParseDoubleAnd()
+            => ParseBinary(ParseOr, DoubleAmperToken);
 
-        protected ExprNode ParseOr(SymbolTable local)
-            => ParseBinary(local, ParseXor, VBarToken);
+        protected ExprNode ParseOr()
+            => ParseBinary(ParseXor, VBarToken);
 
-        protected ExprNode ParseXor(SymbolTable local)
-            => ParseBinary(local, ParseAnd, CaretToken);
+        protected ExprNode ParseXor()
+            => ParseBinary(ParseAnd, CaretToken);
 
-        protected ExprNode ParseAnd(SymbolTable local)
-            => ParseBinary(local, ParseCompare, AmperToken);
+        protected ExprNode ParseAnd()
+            => ParseBinary(ParseCompare, AmperToken);
 
-        protected ExprNode ParseCompare(SymbolTable local)
-            => ParseBinary(local, ParseShift,
+        protected ExprNode ParseCompare()
+            => ParseBinary(ParseShift,
                 GreaterToken, LessToken, GreaterEqualToken, LessEqualToken, EqualToken, NotEqualToken);
 
-        protected ExprNode ParseShift(SymbolTable local)
-            => ParseBinary(local, ParseArith, LShiftToken, RShiftToken);
+        protected ExprNode ParseShift()
+            => ParseBinary(ParseArith, LShiftToken, RShiftToken);
 
-        protected ExprNode ParseArith(SymbolTable local)
-            => ParseBinary(local, ParseTerm, PlusToken, MinusToken, ConcatToken);
+        protected ExprNode ParseArith()
+            => ParseBinary(ParseTerm, PlusToken, MinusToken, ConcatToken);
 
-        protected ExprNode ParseTerm(SymbolTable local)
-            => ParseBinary(local, ParseFactor, AsteriskToken, SlashToken, PercentToken);
+        protected ExprNode ParseTerm()
+            => ParseBinary(ParseFactor, AsteriskToken, SlashToken, PercentToken);
 
-        protected ExprNode ParseFactor(SymbolTable local)
+        protected ExprNode ParseFactor()
         {
             if (TopType == MinusToken
                 || TopType == ExclamationToken
                 || TopType == TildeToken)
             {
                 var op = Pop();
-                var expr = ParseFactor(local);
+                var expr = ParseFactor();
                 return new UnaryExprNode(expr, op);
             }
-            return ParseAtom(local, true);
+            return ParseAtom(true);
         }
 
-        protected ExprNode ParseAtom(SymbolTable local, bool callAllowed)
+        protected ExprNode ParseAtom(bool callAllowed)
         {
             if (TopType == LParenToken)
             {
                 Eat(LParenToken);
-                var expr = ParseExpr(local);
+                var expr = ParseExpr();
                 Eat(RParenToken);
 
                 return expr;
@@ -173,7 +172,7 @@ namespace shrew.Parsing
             if (TopType == Identifier)
             {
                 if (callAllowed)
-                    return ParseCall(local);
+                    return ParseCall();
                 else
                     return new IdentifierNode(Pop());
             }
@@ -186,21 +185,19 @@ namespace shrew.Parsing
             return null;
         }
 
-        protected CallNode ParseCall(SymbolTable local)
+        protected CallNode ParseCall()
         {
             var id = new IdentifierNode(Pop());
             var name = id.Token.Text;
-            int patterncount = -1;
             var paramsQueue = new Queue<ExprNode>();
-
-            if (local != null && local.ContainsKey(name))
-                patterncount = local.Get(name).ParameterCount;
-            else
-                Error();
-
-            for (int i = 0; i < patterncount; i++)
+            
+            while (!IsEOF && Peek().TokenType.IsAtomBeginning())
             {
-                var p = ParseAtom(local, false);
+                ExprNode p = ParseAtom(false);
+                if (p is IdentifierNode idnode)
+                {
+                    p = new CallNode(idnode.Token);
+                }
                 // TODO: Type check
                 paramsQueue.Enqueue(p);
             }
@@ -208,16 +205,15 @@ namespace shrew.Parsing
             return new CallNode(id, paramsQueue.ToArray());
         }
 
-        private ExprNode ParseBinary(SymbolTable local,
-            Func<SymbolTable, ExprNode> lexpr_func,
+        private ExprNode ParseBinary(Func<ExprNode> lexpr_func,
             params SyntaxTokenType[] types)
         {
-            var lexpr = lexpr_func(local);
+            var lexpr = lexpr_func();
             if (IsEOF) return lexpr;
             if (types.Contains(TopType))
             {
                 var op = Pop();
-                var rexpr = ParseBinary(local, lexpr_func, types);
+                var rexpr = ParseBinary(lexpr_func, types);
                 return new BinaryExprNode(lexpr, rexpr, op);
             }
             return lexpr;
