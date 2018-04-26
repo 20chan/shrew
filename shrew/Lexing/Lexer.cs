@@ -72,10 +72,16 @@ namespace shrew.Lexing
                     return LexKeyword();
                 case ' ':
                 case '\t':
-                case '\r':
-                case '\n':
                     Pop();
                     return Lex();
+                case '\r':
+                    Pop();
+                    if (Peek == '\n')
+                        Pop();
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.NewLine);
+                case '\n':
+                    Pop();
+                    return SyntaxFactory.KeywordToken(SyntaxTokenType.NewLine);
                 case '0':
                 case '1':
                 case '2':
