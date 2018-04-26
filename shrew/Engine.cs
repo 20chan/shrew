@@ -42,12 +42,12 @@ namespace shrew
 
         public void ExecuteCode(string code)
         {
-            ExecuteAllStmts(Parser.Parse(code, _globals));
+            ExecuteAllStmts(Parser.Parse(code));
         }
 
         public object EvaluateCode(string code)
         {
-            return EvaluateExpr(Parser.Parse(code, _globals).Nodes[0] as ExprNode, _globals);
+            return EvaluateExpr(Parser.Parse(code).Nodes[0] as ExprNode, _globals);
         }
 
         protected void ExecuteAllStmts(StmtsNode root)
@@ -270,7 +270,7 @@ namespace shrew
 
         public object ExecuteOrEvaluate(string code)
         {
-            var node = Parser.Parse(code, _globals) as StmtsNode;
+            var node = Parser.Parse(code) as StmtsNode;
             int i = 0;
             for (; i < node.Nodes.Length - 1; i++)
                 ExecuteStmt(node.Nodes[i], _globals);

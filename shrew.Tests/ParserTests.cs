@@ -20,7 +20,7 @@ namespace shrew.Tests
             AssertParse("true", KEY(TrueKeyword));
             AssertParse("false", KEY(FalseKeyword));
             AssertParse("\"hello\"", LIT("hello"));
-            AssertParse("abcd", new dic { { "abcd", null } }, CALL("abcd"));
+            AssertParse("abcd", CALL("abcd"));
         }
 
         [TestCategory("Parser"), TestMethod]
@@ -31,7 +31,7 @@ namespace shrew.Tests
                     LIT("1", 1),
                     MinusToken));
 
-            AssertParse("!~!-a", new dic { { "a", null } },
+            AssertParse("!~!-a",
                 UN(
                     UN(
                         UN(
@@ -118,7 +118,7 @@ namespace shrew.Tests
                     "a",
                     LIT("1", 1)));
 
-            AssertParse("abcd = b * 1.5", new dic { { "b", null } },
+            AssertParse("abcd = b * 1.5",
                 ASGN(
                     "abcd",
                     BIN(
@@ -158,13 +158,13 @@ namespace shrew.Tests
                 { "b", null },
             };
 
-            AssertParse("add 1 2", builtins,
+            AssertParse("add 1 2",
                 CALL(
                     "add",
                     LIT("1", 1),
                     LIT("2", 2)));
 
-            AssertParse("add (a + b) 3", builtins,
+            AssertParse("add (a + b) 3",
                 CALL(
                     "add",
                     BIN(
@@ -173,7 +173,7 @@ namespace shrew.Tests
                         PlusToken),
                     LIT("3", 3)));
 
-            AssertParse("add3 a b c = a + b + c\nres = add3 b 10 a", builtins,
+            AssertParse("add3 a b c = a + b + c\nres = add3 b 10 a",
                 ASGN(
                     new[] {
                         ID("add3"),
@@ -192,9 +192,9 @@ namespace shrew.Tests
                     "res",
                     CALL(
                         "add3",
-                        ID("b"),
+                        CALL("b"),
                         LIT("10", 10),
-                        ID("a"))));
+                        CALL("a"))));
         }
 
         [TestCategory("Parser"), TestMethod]
@@ -284,14 +284,10 @@ namespace shrew.Tests
         }
 
         private void AssertParse(string code, params SyntaxNode[] nodes)
-            => AssertParse(code, null, nodes);
-
-        private void AssertParse(string code, Dictionary<string, Delegate> builtins, params SyntaxNode[] nodes)
         {
-            var table = new SymbolTable(args: builtins);
-            var actual = Parser.Parse(code, table);
-            new StmtsNode(nodes).Equals(actual);
-            Assert.AreEqual(actual, new StmtsNode(nodes));
+            var node = new StmtsNode(nodes);
+            var actual = Parser.Parse(code);
+            Assert.AreEqual(node, actual);
         }
 
         private static IdentifierNode ID(string name)
