@@ -155,5 +155,18 @@ namespace shrew.Tests
                 Assert.AreEqual("bigger", engine.EvaluateCode("if (2 > 1) \"bigger\" \"smaller or same\""));
             }
         }
+
+        [TestCategory("Engine"), TestMethod]
+        public void TestHigherOrderFunction()
+        {
+            var engine = new Engine();
+            engine.ExecuteCode("call1 f = f 1");
+            engine.ExecuteCode("plus10 x = x + 10");
+            Assert.AreEqual(2, engine.EvaluateCode("call1 plus10"));
+
+            engine.ExecuteCode("twice f a = f (f a)");
+            engine.ExecuteCode("square x = x * x");
+            Assert.AreEqual(16, engine.EvaluateCode("twice square 2"));
+        }
     }
 }
