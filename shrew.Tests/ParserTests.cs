@@ -262,6 +262,27 @@ namespace shrew.Tests
                         PlusToken)));
         }
 
+        [TestCategory("Parser"), TestMethod]
+        public void TestHigherOrderFunction()
+        {
+            AssertParse("call1 f = f 1",
+                ASGN(
+                    new TokenNode[] {
+                        ID("call1"),
+                        ID("f")
+                    },
+                    CALL("f", LIT("1", 1))));
+
+            AssertParse("twice f a = f (f a)",
+                ASGN(
+                    new TokenNode[] {
+                        ID("twice"),
+                        ID("f"),
+                        ID("a")
+                    },
+                    CALL("f", CALL("f", CALL("a")))));
+        }
+
         private void AssertParse(string code, params SyntaxNode[] nodes)
             => AssertParse(code, null, nodes);
 
