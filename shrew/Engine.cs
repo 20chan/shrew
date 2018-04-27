@@ -154,10 +154,7 @@ namespace shrew
                 {
                     if (call.Parameters.Length != 1)
                         throw new Exception("pattern get need 1 parameter");
-                    var val = env.Get(call.Function.Token.Text).DynamicInvoke(
-                        call.Parameters
-                            .Select(n => EvaluateExpr(n, env))
-                            .ToArray());
+                    var val = EvaluateExpr(call.Parameters[0], env);
 
                     SyntaxToken tok = null;
 
